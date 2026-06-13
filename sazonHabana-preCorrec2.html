@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Sazón Habana – Sabores únicos hechos con Amor</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'brand-bg': 'var(--brand-bg)',       
+            'brand-text': 'var(--brand-text)',     
+            'brand-primary': 'var(--brand-primary)',   
+            'brand-secondary': '#8BAA7B',
+            'brand-border': 'var(--brand-border)',
+            'brand-card': 'var(--brand-card)',
+            'brand-hover': 'var(--brand-hover)',
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --brand-bg: #FDF8F0;
+      --brand-text: #4A3728;
+      --brand-primary: #C17A4D;
+      --brand-hover: #B06B40;
+      --brand-border: #E6D5B8;
+      --brand-card: #FFFFFF;
+      --shadow-color: rgba(74, 55, 40, 0.08);
+    }
+
+    .dark {
+      --brand-bg: #1C1510;
+      --brand-text: #F5EFEB;
+      --brand-primary: #E09363;
+      --brand-hover: #F0A577;
+      --brand-border: #3A2F25;
+      --brand-card: #261D16;
+      --shadow-color: rgba(0, 0, 0, 0.35);
+    }
+
+    body {
+      background-color: var(--brand-bg);
+      color: var(--brand-text);
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    h1, h2, h3, .font-serif {
+      font-family: 'Playfair Display', serif;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: var(--brand-primary);
+      border-radius: 10px;
+    }
+
+    button, a, .card-transition {
+      transition: all 0.2s ease-in-out;
+    }
+
+    /* Avatar dropdown */
+    .avatar-dropdown { position: relative; }
+    .avatar-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 0.5rem;
+      background: var(--brand-card);
+      border: 1px solid var(--brand-border);
+      border-radius: 1rem;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+      width: 180px;
+      z-index: 50;
+      display: none;
+    }
+    .avatar-dropdown-menu.show { display: block; }
+    .avatar-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      color: var(--brand-text);
+      font-size: 0.875rem;
+      transition: background 0.2s;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+    }
+    .avatar-dropdown-item:hover { background: var(--brand-bg); }
+    .avatar-dropdown-item:first-child { border-radius: 1rem 1rem 0 0; }
+    .avatar-dropdown-item:last-child {
+      border-radius: 0 0 1rem 1rem;
+      border-top: 1px solid var(--brand-border);
+      color: #dc3545;
+    }
+
+    /* Password toggle */
+    .password-wrapper { position: relative; }
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--brand-text);
+      opacity: 0.6;
+    }
+    .toggle-password:hover { opacity: 1; }
+
+    .dark .leaflet-tile {
+      filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+    }
+    .dark .leaflet-container { background: #261D16; }
+    .dark .leaflet-popup-content-wrapper, .dark .leaflet-popup-tip {
+      background: #261D16;
+      color: #F5EFEB;
+      border: 1px solid #3A2F25;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-notification" class="fixed top-24 right-6 z-50 transform translate-x-96 opacity-0 transition-all duration-300 flex items-center gap-3 bg-brand-card border border-brand-border px-5 py-4 rounded-2xl shadow-xl max-w-sm">
+    <div id="toast-icon-wrapper" class="w-10 h-10 rounded-full flex items-center justify-center text-white"></div>
+    <div><h4 id="toast-title" class="font-bold text-sm"></h4><p id="toast-desc" class="text-xs opacity-80"></p></div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-brand-bg/95 backdrop-blur-md border-b border-brand-border shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Lado izquierdo: menú hamburguesa + logo -->
+      <div class="flex items-center gap-3">
+        <!-- Botón menú móvil (izquierda del logo) -->
+        <button onclick="toggleMobileMenu()" id="mobile-menu-btn-header" class="md:hidden text-brand-text hover:text-brand-primary focus:outline-none p-2" aria-label="Abrir menú">
+          <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+        
+        <a href="#" onclick="navigate('home')" class="flex items-center gap-2 group">
+          <div class="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-serif">SH</div>
+          <div class="flex flex-col">
+            <span class="text-xl md:text-2xl font-serif font-bold text-brand-text tracking-wide transition-colors group-hover:text-brand-primary leading-none">Sazón Habana</span>
+            <span class="text-[10px] uppercase tracking-widest text-brand-secondary font-bold mt-0.5">Gastronomía Cubana</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- NAVEGACIÓN ESCRITORIO -->
+      <nav class="hidden md:flex space-x-8">
+        <button onclick="navigate('home')" id="nav-home" class="nav-btn text-brand-text hover:text-brand-primary font-medium text-base pb-1 border-b-2 border-brand-primary">Inicio</button>
+        <button onclick="navigate('listado')" id="nav-listado" class="nav-btn text-brand-text hover:text-brand-primary font-medium text-base pb-1 border-b-2 border-transparent">Restaurantes</button>
+        <button onclick="navigate('mapa')" id="nav-mapa" class="nav-btn text-brand-text hover:text-brand-primary font-medium text-base pb-1 border-b-2 border-transparent">Mapa</button>
+        <button id="nav-solicitar" onclick="navigate('solicitar-espacio')" class="nav-btn text-brand-text hover:text-brand-primary font-medium text-base pb-1 border-b-2 border-transparent hidden">Solicitar espacio</button>
+        <button onclick="navigate('admin')" id="nav-admin" class="nav-btn text-red-500 hover:text-red-600 font-bold text-base pb-1 border-b-2 border-transparent hidden">Admin Panel</button>
+      </nav>
+
+      <!-- Lado derecho: tema + avatar -->
+      <div class="flex items-center gap-4">
+        <button onclick="toggleDarkMode()" class="text-brand-text hover:text-brand-primary p-2 text-xl">
+          <i id="theme-icon" class="fa-solid fa-moon"></i>
+        </button>
+        <div id="auth-buttons-container" class="flex items-center">
+          <!-- Dinámico JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MENÚ MÓVIL DESPLEGABLE -->
+    <div id="mobile-menu" class="hidden md:hidden bg-brand-bg border-b border-brand-border py-4 px-6 space-y-4 shadow-inner">
+      <button onclick="navigate('home'); toggleMobileMenu()" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2">Inicio</button>
+      <button onclick="navigate('listado'); toggleMobileMenu()" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2">Restaurantes</button>
+      <button onclick="navigate('mapa'); toggleMobileMenu()" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2">Mapa</button>
+      <button id="mobile-nav-solicitar" onclick="navigate('solicitar-espacio'); toggleMobileMenu()" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2 hidden">Solicitar espacio</button>
+      <button id="mobile-nav-admin" onclick="navigate('admin'); toggleMobileMenu()" class="block w-full text-left font-serif text-lg text-red-500 hover:text-red-600 py-2 hidden">Admin Panel</button>
+      <div id="auth-buttons-container-mobile" class="pt-2 space-y-3"></div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow">
+
+    <!-- PÁGINA 1: HOME -->
+    <section id="page-home" class="page-view">
+      <div class="relative bg-gradient-to-br from-[#EAE0D1] to-brand-bg dark:from-[#33251B] dark:to-brand-bg overflow-hidden py-16 md:py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+              <span class="inline-block text-brand-primary uppercase tracking-widest text-xs md:text-sm font-bold bg-brand-primary/10 px-3 py-1 rounded-full">🍲 Sabor auténtico y cubanía</span>
+              <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-brand-text leading-tight">Descubre el Paladar de <br><span class="italic text-brand-primary underline decoration-brand-border">La Habana</span></h1>
+              <p class="text-lg md:text-xl text-brand-text/80 max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">De los restaurantes más elegantes del Vedado y Miramar, a las joyas escondidas en la Habana Vieja. Encuentra cartas completas y ubicaciones.</p>
+              <div class="pt-4 max-w-2xl mx-auto lg:mx-0">
+                <form onsubmit="handleHeroSearch(event)" class="bg-brand-card p-2 rounded-2xl md:rounded-full border border-brand-border shadow-lg flex flex-col md:flex-row gap-2 items-center">
+                  <div class="flex items-center gap-3 px-3 py-2 w-full">
+                    <i class="fa-solid fa-magnifying-glass text-brand-primary text-xl"></i>
+                    <input type="text" id="hero-search-input" placeholder="¿Qué se te antoja hoy? (pizzas, criolla, mariscos...)" class="bg-transparent text-brand-text placeholder-brand-text/50 outline-none w-full text-base">
+                  </div>
+                  <button type="submit" class="w-full md:w-auto bg-brand-primary hover:bg-brand-hover text-white px-8 py-3 rounded-xl md:rounded-full font-semibold">Buscar</button>
+                </form>
+              </div>
+            </div>
+            <div class="lg:col-span-5 relative">
+              <div class="relative mx-auto max-w-[400px] lg:max-w-none">
+                <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=800" alt="Plato cubano" class="rounded-3xl shadow-xl border-4 border-brand-card object-cover w-full h-[350px] md:h-[450px] relative z-10" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="py-12 bg-brand-card/30 border-y border-brand-border/40">
+        <div class="max-w-7xl mx-auto px-4">
+          <p class="text-center text-xs uppercase tracking-widest text-brand-primary font-bold mb-6">Busca según tus antojos</p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+            <button onclick="quickFilterTipo('criolla')" class="p-4 bg-brand-card hover:border-brand-primary border border-brand-border rounded-2xl text-center shadow-sm flex flex-col items-center gap-2"><span class="text-2xl">🍛</span><span class="text-xs font-semibold">Comida Criolla</span></button>
+            <button onclick="quickFilterTipo('rápida')" class="p-4 bg-brand-card hover:border-brand-primary border border-brand-border rounded-2xl text-center shadow-sm flex flex-col items-center gap-2"><span class="text-2xl">🍔</span><span class="text-xs font-semibold">Comida Rápida</span></button>
+            <button onclick="quickFilterTipo('pizza')" class="p-4 bg-brand-card hover:border-brand-primary border border-brand-border rounded-2xl text-center shadow-sm flex flex-col items-center gap-2"><span class="text-2xl">🍕</span><span class="text-xs font-semibold">Pizzas & Pastas</span></button>
+            <button onclick="quickFilterTipo('mariscos')" class="p-4 bg-brand-card hover:border-brand-primary border border-brand-border rounded-2xl text-center shadow-sm flex flex-col items-center gap-2"><span class="text-2xl">🦞</span><span class="text-xs font-semibold">Mariscos & Pescado</span></button>
+            <button onclick="quickFilterTipo('cafetería')" class="p-4 bg-brand-card hover:border-brand-primary border border-brand-border rounded-2xl text-center shadow-sm flex flex-col items-center gap-2"><span class="text-2xl">☕</span><span class="text-xs font-semibold">Cafetería & Desayunos</span></button>
+            <button onclick="navigate('listado')" class="p-4 bg-brand-primary text-white hover:bg-brand-hover rounded-2xl text-center shadow-sm flex flex-col items-center justify-center gap-1"><span class="text-lg"><i class="fa-solid fa-globe"></i></span><span class="text-xs font-bold">Ver Todos</span></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="py-16 space-y-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div><div class="flex justify-between items-end mb-6"><div><span class="text-brand-primary uppercase tracking-widest text-xs font-bold">Recomendados del mes</span><h2 class="text-3xl font-serif font-bold text-brand-text">Sitios Imperdibles</h2></div><button onclick="navigate('listado')" class="text-brand-primary hover:text-brand-hover font-semibold text-sm flex items-center gap-1 group">Ver todos <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i></button></div><div id="carrusel-destacados" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div></div>
+        <div><div class="flex justify-between items-end mb-6"><div><span class="text-brand-primary uppercase tracking-widest text-xs font-bold">Sabor de Barrio</span><h2 class="text-3xl font-serif font-bold text-brand-text">Lo mejor de El Vedado</h2></div><button onclick="quickFilterZona('Vedado')" class="text-brand-primary hover:text-brand-hover font-semibold text-sm flex items-center gap-1 group">Ver zona <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i></button></div><div id="carrusel-zona-vedado" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div></div>
+        <div><div class="flex justify-between items-end mb-6"><div><span class="text-brand-primary uppercase tracking-widest text-xs font-bold">Aires de Tradición</span><h2 class="text-3xl font-serif font-bold text-brand-text">El encanto de La Habana Vieja</h2></div><button onclick="quickFilterZona('Habana Vieja')" class="text-brand-primary hover:text-brand-hover font-semibold text-sm flex items-center gap-1 group">Ver zona <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i></button></div><div id="carrusel-zona-habanavieja" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div></div>
+      </section>
+    </section>
+
+    <!-- PÁGINA 2: LISTADO -->
+    <section id="page-listado" class="page-view hidden py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-10"><span class="text-brand-primary uppercase tracking-widest text-xs font-bold">Ruta Gastronómica</span><h1 class="text-4xl font-serif font-bold text-brand-text mt-1">Explora Restaurantes</h1><p class="text-brand-text/70 mt-3">Utiliza los filtros para afinar tu búsqueda culinaria.</p></div>
+        <div class="flex justify-between items-center mb-6 bg-brand-card p-4 rounded-2xl border border-brand-border flex-wrap gap-4"><div class="flex items-center gap-3"><button onclick="openFilterOverlay()" class="lg:hidden bg-brand-primary text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 text-sm shadow-md"><i class="fa-solid fa-sliders"></i> Filtros</button><span class="hidden lg:block text-brand-text/60 text-sm font-semibold" id="total-resultados-count">Cargando...</span></div><div class="flex items-center gap-2"><label class="text-xs font-bold uppercase text-brand-text/60">Ordenar:</label><select id="sort-select" onchange="applyFiltersAndRender()" class="bg-brand-bg text-brand-text text-sm rounded-xl px-3 py-2 border border-brand-border outline-none"><option value="pop">Popularidad</option><option value="p-low">Precio: Menor a Mayor</option><option value="p-high">Precio: Mayor a Menor</option><option value="name">Nombre (A-Z)</option></select></div></div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div class="hidden lg:block lg:col-span-3 space-y-6 bg-brand-card p-6 rounded-3xl border border-brand-border sticky top-24 h-fit"><div class="flex justify-between items-center pb-4 border-b border-brand-border/40"><h3 class="font-serif font-bold text-lg text-brand-text"><i class="fa-solid fa-filter text-brand-primary"></i> Filtrar</h3><button onclick="resetAllFilters()" class="text-xs text-brand-primary hover:underline font-bold">Limpiar</button></div>
+            <div><label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Zona</label><select id="filter-zona" onchange="applyFiltersAndRender()" class="w-full bg-brand-bg text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none"><option value="todos">Cualquier Zona</option><option value="Vedado">Vedado</option><option value="Miramar">Miramar</option><option value="Habana Vieja">Habana Vieja</option><option value="Playa">Playa</option><option value="Centro">Centro Habana</option></select></div>
+            <div><label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Tipo de Cocina</label><select id="filter-tipo" onchange="applyFiltersAndRender()" class="w-full bg-brand-bg text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none"><option value="todos">Cualquier Tipo</option><option value="criolla">Comida Criolla</option><option value="rápida">Comida Rápida</option><option value="pizza">Pizzas & Pastas</option><option value="mariscos">Mariscos</option><option value="cafetería">Cafetería</option></select></div>
+            <div><label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Rango de Precios</label><select id="filter-precio" onchange="applyFiltersAndRender()" class="w-full bg-brand-bg text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none"><option value="todos">Cualquier precio</option><option value="1">Económico ($)</option><option value="2">Moderado ($$)</option><option value="3">Premium ($$$)</option></select></div>
+            <div class="pt-2 border-t border-brand-border/40"><label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold mb-2">Comodidades</label><div class="space-y-2"><label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="filter-aire" onchange="applyFiltersAndRender()" class="rounded text-brand-primary w-4 h-4"><span>Terraza / Aire Libre</span></label><label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="filter-clima" onchange="applyFiltersAndRender()" class="rounded text-brand-primary w-4 h-4"><span>Climatizado</span></label><label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="filter-parqueo" onchange="applyFiltersAndRender()" class="rounded text-brand-primary w-4 h-4"><span>Parqueo Privado</span></label></div></div>
+          </div>
+          <div class="col-span-1 lg:col-span-9 space-y-8"><div id="grid-resultados" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div><div id="listado-empty-state" class="hidden text-center py-16 bg-brand-card rounded-3xl border border-brand-border"><span class="text-5xl">🍽️</span><p class="text-lg text-brand-text/70 font-medium mt-4">No se encontraron restaurantes con esos filtros.</p><button onclick="resetAllFilters()" class="mt-4 bg-brand-primary text-white px-6 py-2.5 rounded-full font-bold">Mostrar todos</button></div><div id="pagination-controls" class="flex justify-center items-center gap-2 pt-6 border-t border-brand-border/40"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OVERLAY FILTROS MÓVIL -->
+    <div id="mobile-filter-overlay" class="hidden fixed inset-0 z-50 overflow-hidden bg-black/60 flex justify-end"><div class="bg-brand-bg w-full max-w-sm h-full overflow-y-auto p-6 shadow-2xl flex flex-col justify-between"><div><div class="flex justify-between items-center pb-4 border-b border-brand-border/50 mb-6"><h3 class="font-serif font-bold text-xl text-brand-text"><i class="fa-solid fa-sliders text-brand-primary"></i> Filtros</h3><button onclick="closeFilterOverlay()" class="text-2xl text-brand-text/60"><i class="fa-solid fa-xmark"></i></button></div><div class="space-y-6"><div><label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Zona</label><select id="m-filter-zona" class="w-full bg-brand-card text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none"><option value="todos">Cualquier Zona</option><option value="Vedado">Vedado</option><option value="Miramar">Miramar</option><option value="Habana Vieja">Habana Vieja</option><option value="Playa">Playa</option><option value="Centro">Centro Habana</option></select></div><div><label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Tipo de Cocina</label><select id="m-filter-tipo" class="w-full bg-brand-card text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none"><option value="todos">Cualquier Tipo</option><option value="criolla">Comida Criolla</option><option value="rápida">Comida Rápida</option><option value="pizza">Pizzas & Pastas</option><option value="mariscos">Mariscos</option><option value="cafetería">Cafetería</option></select></div><div><label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Precio</label><select id="m-filter-precio" class="w-full bg-brand-card text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none"><option value="todos">Cualquier precio</option><option value="1">Económico ($)</option><option value="2">Moderado ($$)</option><option value="3">Premium ($$$)</option></select></div><div class="pt-2"><label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold mb-2">Comodidades</label><label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="m-filter-aire" class="rounded text-brand-primary w-4 h-4"><span>Terraza</span></label><label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="m-filter-clima" class="rounded text-brand-primary w-4 h-4"><span>Climatizado</span></label><label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="m-filter-parqueo" class="rounded text-brand-primary w-4 h-4"><span>Parqueo</span></label></div></div></div><div class="pt-6 border-t border-brand-border/50 flex gap-4 mt-8"><button onclick="resetMobileFilters()" class="flex-1 py-3 bg-brand-card border border-brand-border rounded-xl font-bold text-sm text-brand-text">Limpiar todo</button><button onclick="applyMobileFilters()" class="flex-1 py-3 bg-brand-primary text-white rounded-xl font-bold text-sm">Aplicar</button></div></div></div>
+
+    <!-- PÁGINA 3: MAPA -->
+    <section id="page-mapa" class="page-view hidden relative"><div class="w-full h-[calc(100vh-80px)] flex flex-col relative"><div id="mapa-principal" class="w-full flex-grow z-10"></div><div class="absolute bottom-6 left-4 right-4 md:left-6 md:right-6 lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:w-full lg:max-w-4xl z-20 bg-brand-bg/95 backdrop-blur-md border border-brand-border rounded-3xl p-4 shadow-2xl flex flex-col md:flex-row gap-4 items-center justify-between"><div class="flex flex-wrap items-center gap-3 w-full md:w-auto"><span class="text-xs uppercase font-bold text-brand-primary bg-brand-primary/10 px-2 py-1 rounded-md"><i class="fa-solid fa-map-pin"></i> Filtrar</span><select id="map-select-zona" onchange="updateMapMarkers()" class="bg-brand-card text-brand-text text-xs rounded-xl p-2.5 border border-brand-border outline-none"><option value="todos">Todas las Zonas</option><option value="Vedado">Vedado</option><option value="Miramar">Miramar</option><option value="Habana Vieja">Habana Vieja</option></select><select id="map-select-tipo" onchange="updateMapMarkers()" class="bg-brand-card text-brand-text text-xs rounded-xl p-2.5 border border-brand-border outline-none"><option value="todos">Todos los Tipos</option><option value="criolla">Comida Criolla</option><option value="rápida">Comida Rápida</option><option value="pizza">Pizzas</option><option value="mariscos">Mariscos</option><option value="cafetería">Cafeterías</option></select></div><div class="flex items-center gap-4 text-xs font-semibold w-full md:w-auto justify-end border-t md:border-t-0 pt-2 md:pt-0 border-brand-border/35"><label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="map-chk-aire" onchange="updateMapMarkers()" class="rounded text-brand-primary w-3.5 h-3.5"><span>Terraza</span></label><button onclick="resetMapFilters()" class="text-brand-primary font-bold hover:underline">Limpiar</button></div></div></div></section>
+
+    <!-- PÁGINA 4: DETALLE -->
+    <section id="page-detalle" class="page-view hidden py-12"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><button onclick="navigate('listado')" class="inline-flex items-center gap-2 text-brand-text hover:text-brand-primary font-medium mb-8 transition-colors group"><i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i> Volver a Restaurantes</button><div id="restaurante-detalle-content" class="space-y-12"></div></div></section>
+
+    <!-- PÁGINA 5: SOLICITAR ESPACIO -->
+    <section id="page-solicitar-espacio" class="page-view hidden py-12"><div class="max-w-4xl mx-auto px-4 sm:px-6"><div class="text-center max-w-2xl mx-auto mb-10"><span class="text-brand-primary uppercase tracking-widest text-xs font-bold">Crece con Sazón</span><h1 class="text-4xl font-serif font-bold text-brand-text mt-1">Solicitar mi espacio</h1><p class="text-brand-text/70 mt-3">Promociona tu espacio gastronómico en La Habana.</p></div><div class="bg-brand-card rounded-3xl p-6 md:p-10 border border-brand-border shadow-lg"><div class="flex justify-between items-center mb-10 border-b border-brand-border/40 pb-6"><div id="step-indicator-1" class="flex flex-col items-center flex-1 text-center font-semibold text-brand-primary"><span class="w-10 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold text-base shadow-md mb-2">1</span><span class="text-xs">Detalles del Negocio</span></div><div class="w-12 h-1 bg-brand-border/50 mb-6"></div><div id="step-indicator-2" class="flex flex-col items-center flex-1 text-center font-semibold text-brand-text/40"><span id="step-num-2" class="w-10 h-10 rounded-full bg-brand-border/50 text-brand-text/50 flex items-center justify-center font-bold text-base mb-2">2</span><span class="text-xs">Ubicación y Mapa</span></div><div class="w-12 h-1 bg-brand-border/50 mb-6"></div><div id="step-indicator-3" class="flex flex-col items-center flex-1 text-center font-semibold text-brand-text/40"><span id="step-num-3" class="w-10 h-10 rounded-full bg-brand-border/50 text-brand-text/50 flex items-center justify-center font-bold text-base mb-2">3</span><span class="text-xs">Documentos Legales</span></div></div><form id="wizard-form" onsubmit="handleWizardSubmit(event)" class="space-y-8"><div id="wizard-step-1" class="wizard-step space-y-6"><h3 class="font-serif font-bold text-xl border-b border-brand-border/30 pb-2 text-brand-text"><i class="fa-solid fa-store text-brand-primary"></i> Información del Restaurante</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label class="text-sm font-semibold text-brand-text">Nombre del Establecimiento *</label><input type="text" id="wiz-nombre" required placeholder="Ej. Paladar Doña Blanquita" class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"></div><div><label class="text-sm font-semibold text-brand-text">Tipo de Cocina *</label><select id="wiz-tipo" required class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"><option value="">Selecciona tipo...</option><option value="criolla">Comida Criolla</option><option value="rápida">Comida Rápida</option><option value="pizza">Pizzas & Pastas</option><option value="mariscos">Mariscos</option><option value="cafetería">Cafetería</option></select></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-6"><div><label class="text-sm font-semibold text-brand-text">Rango de Precios *</label><select id="wiz-precio" required class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"><option value="">Selecciona nivel...</option><option value="1">Económico ($)</option><option value="2">Moderado ($$)</option><option value="3">Premium ($$$)</option></select></div><div><label class="text-sm font-semibold text-brand-text">Horario *</label><input type="text" id="wiz-horario" required placeholder="Ej. 12:00 PM - 11:00 PM" class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"></div><div><label class="text-sm font-semibold text-brand-text">Teléfono *</label><input type="tel" id="wiz-telefono" required placeholder="+53 52123456" class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"></div></div><div><label class="text-sm font-semibold text-brand-text">Descripción *</label><textarea id="wiz-descripcion" required rows="4" placeholder="Cuéntales tu propuesta..." class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"></textarea></div><div><label class="text-sm font-semibold text-brand-text">Foto de Portada (URL)</label><input type="url" id="wiz-img" placeholder="https://..." class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"></div><div class="space-y-3 pt-3"><p class="text-sm font-bold text-brand-text/70 uppercase">Comodidades</p><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><label class="flex items-center gap-2 p-3 bg-brand-bg rounded-xl border border-brand-border/40 cursor-pointer text-sm"><input type="checkbox" id="wiz-chk-aire" class="rounded text-brand-primary w-4 h-4"><span>Terraza / Aire Libre</span></label><label class="flex items-center gap-2 p-3 bg-brand-bg rounded-xl border border-brand-border/40 cursor-pointer text-sm"><input type="checkbox" id="wiz-chk-clima" class="rounded text-brand-primary w-4 h-4"><span>Climatizado</span></label><label class="flex items-center gap-2 p-3 bg-brand-bg rounded-xl border border-brand-border/40 cursor-pointer text-sm"><input type="checkbox" id="wiz-chk-parqueo" class="rounded text-brand-primary w-4 h-4"><span>Parqueo Privado</span></label></div></div></div><div id="wizard-step-2" class="wizard-step space-y-6 hidden"><h3 class="font-serif font-bold text-xl border-b border-brand-border/30 pb-2 text-brand-text"><i class="fa-solid fa-location-dot text-brand-primary"></i> Ubicación</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label class="text-sm font-semibold text-brand-text">Zona *</label><select id="wiz-zona" required class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"><option value="">Selecciona zona...</option><option value="Vedado">Vedado</option><option value="Miramar">Miramar</option><option value="Habana Vieja">Habana Vieja</option><option value="Playa">Playa</option><option value="Centro">Centro Habana</option></select></div><div><label class="text-sm font-semibold text-brand-text">Dirección *</label><input type="text" id="wiz-direccion" required class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"></div></div><div class="space-y-2"><label class="text-sm font-semibold text-brand-text">Ubica en el mapa (arrastra el marcador)</label><div id="wizard-map" class="w-full h-72 rounded-2xl border border-brand-border shadow-inner relative z-10"></div><p class="text-xs text-brand-text/50 italic"><i class="fa-solid fa-circle-info"></i> Haz clic en el mapa para posicionar el pin.</p><input type="hidden" id="wiz-lat" value="23.1136"><input type="hidden" id="wiz-lng" value="-82.3666"></div></div><div id="wizard-step-3" class="wizard-step space-y-6 hidden"><h3 class="font-serif font-bold text-xl border-b border-brand-border/30 pb-2 text-brand-text"><i class="fa-solid fa-gavel text-brand-primary"></i> Verificación Legal</h3><p class="text-sm text-brand-text/70">Para operar en la plataforma, requerimos constancia de tu licencia comercial o TCP.</p><div class="border-2 border-dashed border-brand-border rounded-2xl p-8 text-center bg-brand-bg"><div class="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center mx-auto text-2xl text-brand-primary mb-4"><i class="fa-solid fa-file-pdf"></i></div><h4 class="font-bold text-base text-brand-text mb-1">Subir Licencia Comercial o Identidad</h4><p class="text-xs text-brand-text/50 mb-4">Máximo 5 MB</p><input type="file" id="wiz-file-legal" onchange="handleSimulatedFileUpload(event)" class="hidden"><button type="button" onclick="document.getElementById('wiz-file-legal').click()" class="bg-brand-primary text-white text-xs font-bold px-5 py-2.5 rounded-xl">Seleccionar archivo</button><div id="wiz-file-name" class="text-xs text-brand-secondary font-bold mt-3"></div></div><div class="p-4 bg-yellow-50 dark:bg-[#332A20] rounded-2xl border border-yellow-200 text-xs space-y-3"><label class="flex items-start gap-3 cursor-pointer"><input type="checkbox" id="wiz-chk-responsable" required class="rounded text-brand-primary w-4 h-4 mt-0.5"><span>Declaro que la información es verídica y corresponde a mi negocio legalmente constituido.</span></label></div></div><div class="flex justify-between items-center pt-6 border-t border-brand-border/40 mt-8"><button type="button" id="wiz-btn-prev" onclick="prevWizardStep()" disabled class="px-6 py-3 bg-brand-bg border border-brand-border text-brand-text rounded-xl font-bold text-sm disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2"><i class="fa-solid fa-chevron-left"></i> Atrás</button><button type="button" id="wiz-btn-next" onclick="nextWizardStep()" class="px-6 py-3 bg-brand-primary text-white rounded-xl font-bold text-sm flex items-center gap-2">Siguiente <i class="fa-solid fa-chevron-right"></i></button><button type="submit" id="wiz-btn-submit" class="hidden px-8 py-3 bg-brand-secondary text-white rounded-xl font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> Enviar Solicitud</button></div></form></div></div></section>
+
+    <!-- PÁGINA 6: PERFIL DE USUARIO -->
+    <section id="page-perfil" class="page-view hidden py-12"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="text-center max-w-2xl mx-auto mb-10"><span class="text-brand-primary uppercase tracking-widest text-xs font-bold">Tu Cuenta</span><h1 class="text-4xl font-serif font-bold text-brand-text mt-1">Configuración del Perfil</h1><p class="text-brand-text/70 mt-3">Personaliza tu experiencia y gestiona tu restaurante.</p></div><div class="grid grid-cols-1 lg:grid-cols-12 gap-8"><div class="lg:col-span-5 space-y-6"><div class="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4"><h3 class="font-serif font-bold text-lg border-b border-brand-border/40 pb-2 text-brand-text"><i class="fa-regular fa-id-card text-brand-primary"></i> Datos Personales</h3><div class="space-y-4"><div><label class="text-xs font-bold uppercase text-brand-text/60">Nombre Completo</label><input type="text" id="prof-nombre" class="w-full bg-brand-bg text-brand-text p-3 rounded-xl border border-brand-border outline-none"></div><div><label class="text-xs font-bold uppercase text-brand-text/60">Correo Electrónico</label><input type="email" id="prof-email" disabled class="w-full bg-brand-bg text-brand-text p-3 rounded-xl border border-brand-border outline-none opacity-50"></div><div><label class="text-xs font-bold uppercase text-brand-text/60">Teléfono</label><input type="tel" id="prof-telefono" maxlength="8" class="w-full bg-brand-bg text-brand-text p-3 rounded-xl border border-brand-border outline-none"></div><button onclick="saveProfileData()" class="w-full py-2.5 bg-brand-primary hover:bg-brand-hover text-white rounded-xl text-xs font-bold">Guardar Cambios</button></div></div><div class="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4"><h3 class="font-serif font-bold text-lg border-b border-brand-border/40 pb-2 text-brand-text"><i class="fa-solid fa-wand-magic-sparkles text-brand-primary"></i> Apariencia</h3><div><p class="text-xs text-brand-text/60 font-semibold mb-2">Color de identidad:</p><div class="flex gap-3"><button onclick="setThemeColor('#C17A4D')" class="w-8 h-8 rounded-full bg-[#C17A4D] border-2 border-transparent hover:scale-110"></button><button onclick="setThemeColor('#C23F3F')" class="w-8 h-8 rounded-full bg-[#C23F3F] hover:scale-110"></button><button onclick="setThemeColor('#4A708B')" class="w-8 h-8 rounded-full bg-[#4A708B] hover:scale-110"></button><button onclick="setThemeColor('#5B8A72')" class="w-8 h-8 rounded-full bg-[#5B8A72] hover:scale-110"></button><button onclick="setThemeColor('#6C5B7B')" class="w-8 h-8 rounded-full bg-[#6C5B7B] hover:scale-110"></button></div></div></div><div class="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4"><h3 class="font-serif font-bold text-lg border-b border-brand-border/40 pb-2 text-brand-text"><i class="fa-regular fa-star-half-stroke text-brand-primary"></i> Mis Reseñas</h3><div id="prof-resenas-list" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar"></div></div><div class="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4"><h3 class="font-serif font-bold text-lg border-b border-brand-border/40 pb-2 text-brand-text"><i class="fa-regular fa-building text-brand-primary"></i> Mi Restaurante</h3><div id="panel-gestor-restaurante" class="space-y-4"></div></div><div class="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4"><h3 class="font-serif font-bold text-lg border-b border-brand-border/40 pb-2 text-red-500"><i class="fa-solid fa-shield-halved"></i> Seguridad</h3><div class="space-y-3"><button onclick="openChangePasswordModal()" class="w-full text-left p-3 bg-brand-bg hover:border-brand-primary border border-brand-border rounded-xl text-xs font-semibold flex items-center justify-between"><span>Cambiar Contraseña</span> <i class="fa-solid fa-key text-brand-primary"></i></button><button onclick="openDeleteAccountModal()" class="w-full text-left p-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-xl text-xs font-semibold flex items-center justify-between"><span>Eliminar Cuenta</span> <i class="fa-solid fa-trash"></i></button></div></div></div><div class="lg:col-span-7"><div id="panel-gestor-restaurante-right" class="bg-brand-card p-6 md:p-8 rounded-3xl border border-brand-border shadow-sm space-y-6"></div></div></div></div></section>
+
+    <!-- PÁGINA 7: LOGIN -->
+    <section id="page-login" class="page-view hidden py-16"><div class="max-w-md mx-auto px-4"><div class="bg-brand-card rounded-3xl p-8 border border-brand-border shadow-xl space-y-6"><div class="text-center"><h1 class="text-3xl font-serif font-bold text-brand-text">Iniciar Sesión</h1><p class="text-xs text-brand-text/60">Bienvenido de vuelta a Sazón Habana.</p></div><form onsubmit="handleLogin(event)" class="space-y-4"><div><label class="text-xs font-bold uppercase text-brand-text/60">Correo o Teléfono</label><input type="text" id="login-id" required placeholder="correo@ejemplo.com o 51234567" class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"></div><div><div class="flex justify-between"><label class="text-xs font-bold uppercase text-brand-text/60">Contraseña</label><button type="button" onclick="simulateRecovery()" class="text-[10px] text-brand-primary hover:underline">¿Olvidó su contraseña?</button></div><div class="password-wrapper"><input type="password" id="login-password" required class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"><button type="button" class="toggle-password" onclick="togglePasswordVisibility('login-password', this)"><i class="fa-regular fa-eye-slash"></i></button></div></div><button type="submit" class="w-full py-3.5 bg-brand-primary hover:bg-brand-hover text-white rounded-xl font-bold text-sm">Entrar</button></form><div class="relative flex py-2 items-center"><div class="flex-grow border-t border-brand-border/40"></div><span class="flex-shrink mx-4 text-xs text-brand-text/50">¿No tienes cuenta?</span><div class="flex-grow border-t border-brand-border/40"></div></div><button onclick="navigate('registro')" class="w-full py-3 border border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white rounded-xl font-bold text-sm">Registrarse</button></div></div></section>
+
+    <!-- PÁGINA 8: REGISTRO -->
+    <section id="page-registro" class="page-view hidden py-16"><div class="max-w-lg mx-auto px-4"><div class="bg-brand-card rounded-3xl p-8 border border-brand-border shadow-xl space-y-6"><div class="text-center"><h1 class="text-3xl font-serif font-bold text-brand-text">Crea tu Cuenta</h1><p class="text-xs text-brand-text/60">Regístrate para calificar restaurantes y más.</p></div><form onsubmit="handleRegister(event)" class="space-y-4"><div><label class="text-xs font-bold uppercase text-brand-text/60">Nombre Completo *</label><input type="text" id="reg-nombre" required class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="text-xs font-bold uppercase text-brand-text/60">Correo *</label><input type="email" id="reg-email" required class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"></div><div><label class="text-xs font-bold uppercase text-brand-text/60">Teléfono</label><input type="tel" id="reg-telefono" maxlength="8" class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"></div></div><div><label class="text-xs font-bold uppercase text-brand-text/60">Contraseña *</label><div class="password-wrapper"><input type="password" id="reg-password" required minlength="4" class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"><button type="button" class="toggle-password" onclick="togglePasswordVisibility('reg-password', this)"><i class="fa-regular fa-eye-slash"></i></button></div></div><div><label class="text-xs font-bold uppercase text-brand-text/60">Confirmar Contraseña *</label><div class="password-wrapper"><input type="password" id="reg-confirm-password" required class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none"><button type="button" class="toggle-password" onclick="togglePasswordVisibility('reg-confirm-password', this)"><i class="fa-regular fa-eye-slash"></i></button></div></div><div class="space-y-2 pt-2"><p class="text-xs font-bold uppercase text-brand-text/60">Preferencias de Comida</p><div class="flex flex-wrap gap-2"><button type="button" onclick="toggleRegPref('criolla')" id="reg-pref-criolla" class="px-3 py-1.5 rounded-full border border-brand-border text-xs font-semibold bg-brand-bg text-brand-text">🍛 Criolla</button><button type="button" onclick="toggleRegPref('rápida')" id="reg-pref-rápida" class="px-3 py-1.5 rounded-full border border-brand-border text-xs font-semibold bg-brand-bg text-brand-text">🍔 Rápida</button><button type="button" onclick="toggleRegPref('pizza')" id="reg-pref-pizza" class="px-3 py-1.5 rounded-full border border-brand-border text-xs font-semibold bg-brand-bg text-brand-text">🍕 Pizzas</button><button type="button" onclick="toggleRegPref('mariscos')" id="reg-pref-mariscos" class="px-3 py-1.5 rounded-full border border-brand-border text-xs font-semibold bg-brand-bg text-brand-text">🦞 Mariscos</button><button type="button" onclick="toggleRegPref('cafetería')" id="reg-pref-cafetería" class="px-3 py-1.5 rounded-full border border-brand-border text-xs font-semibold bg-brand-bg text-brand-text">☕ Cafeterías</button></div></div><div class="space-y-2 pt-2 border-t border-brand-border/40"><p class="text-xs font-bold uppercase text-brand-text/60">Tipo de Cuenta</p><div class="grid grid-cols-2 gap-3"><label class="flex items-center gap-2 p-3 bg-brand-bg rounded-xl border border-brand-border/40 cursor-pointer text-xs"><input type="radio" name="reg-rol" value="casual" checked class="text-brand-primary"> Usuario Casual</label><label class="flex items-center gap-2 p-3 bg-brand-bg rounded-xl border border-brand-border/40 cursor-pointer text-xs"><input type="radio" name="reg-rol" value="gestor" class="text-brand-primary"> Gestor Restaurante</label></div></div><button type="submit" class="w-full py-3.5 bg-brand-primary hover:bg-brand-hover text-white rounded-xl font-bold text-sm">Registrarse</button></form><div class="text-center"><button onclick="navigate('login')" class="text-xs text-brand-primary hover:underline font-bold">¿Ya tienes cuenta? Inicia sesión</button></div></div></div></section>
+
+    <!-- PÁGINA 9: ADMIN PANEL -->
+    <section id="page-admin" class="page-view hidden py-12"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="text-center max-w-2xl mx-auto mb-10"><span class="text-red-500 uppercase tracking-widest text-xs font-bold">Panel de Administración</span><h1 class="text-4xl font-serif font-bold text-brand-text mt-1">Aprobación de Solicitudes</h1></div><div class="bg-brand-card rounded-3xl p-6 md:p-8 border border-brand-border shadow-lg"><div class="flex justify-between items-center pb-4 mb-6 border-b border-brand-border/40"><h3 class="font-serif font-bold text-xl text-brand-text">Solicitudes Pendientes</h3><span id="admin-pending-badge" class="bg-red-500 text-white text-xs px-2.5 py-1 rounded-full">0</span></div><div class="overflow-x-auto"><table class="w-full text-left text-sm text-brand-text"><thead><tr class="border-b border-brand-border/50 text-xs uppercase font-bold text-brand-text/60"><th class="p-3">Restaurante</th><th class="p-3">Gestor</th><th class="p-3">Zona / Tipo</th><th class="p-3">Documento</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="admin-table-body" class="divide-y divide-brand-border/30"></tbody></table></div><div id="admin-empty-state" class="hidden text-center py-12"><span class="text-4xl">🎉</span><p class="text-sm font-semibold text-brand-text/60 mt-2">No hay solicitudes pendientes.</p></div></div></div></section>
+  </main>
+
+  <!-- MODALES -->
+  <div id="modal-change-password" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div class="bg-brand-card rounded-3xl p-6 max-w-sm w-full border border-brand-border shadow-2xl space-y-4"><div class="flex justify-between items-center"><h4 class="font-bold text-brand-text">Cambiar Contraseña</h4><button onclick="closeChangePasswordModal()" class="text-brand-text/60 hover:text-brand-primary text-xl"><i class="fa-solid fa-xmark"></i></button></div><div class="space-y-3"><div class="password-wrapper"><input type="password" id="m-old-pass" placeholder="Contraseña actual" class="w-full bg-brand-bg text-brand-text p-2.5 rounded-xl border border-brand-border outline-none text-sm"><button type="button" class="toggle-password" onclick="togglePasswordVisibility('m-old-pass', this)"><i class="fa-regular fa-eye-slash"></i></button></div><div class="password-wrapper"><input type="password" id="m-new-pass" placeholder="Nueva contraseña" class="w-full bg-brand-bg text-brand-text p-2.5 rounded-xl border border-brand-border outline-none text-sm"><button type="button" class="toggle-password" onclick="togglePasswordVisibility('m-new-pass', this)"><i class="fa-regular fa-eye-slash"></i></button></div></div><button onclick="submitChangePassword()" class="w-full py-2.5 bg-brand-primary text-white font-bold rounded-xl text-xs">Actualizar Contraseña</button></div></div>
+
+  <div id="modal-delete-account" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div class="bg-brand-card rounded-3xl p-6 max-w-md w-full border border-brand-border shadow-2xl space-y-4"><div class="flex justify-between items-center"><h4 class="font-bold text-red-500">¿Eliminar tu cuenta?</h4><button onclick="closeDeleteAccountModal()" class="text-brand-text/60 hover:text-brand-primary text-xl"><i class="fa-solid fa-xmark"></i></button></div><p class="text-xs text-brand-text/80">Tendrás 14 días para cancelar esta acción. Pasado ese tiempo, tus datos se eliminarán permanentemente.</p><input type="text" id="m-del-confirm" placeholder="Escribe ELIMINAR" class="w-full bg-brand-bg text-brand-text p-2.5 rounded-xl border border-brand-border outline-none text-sm"><div class="flex gap-3"><button onclick="closeDeleteAccountModal()" class="flex-1 py-2.5 bg-brand-bg border border-brand-border font-bold rounded-xl text-xs">Cancelar</button><button onclick="submitDeleteAccount()" class="flex-1 py-2.5 bg-red-600 text-white font-bold rounded-xl text-xs">Confirmar</button></div></div></div>
+
+  <!-- FOOTER (2 columnas) -->
+  <footer class="bg-brand-text text-white py-12 border-t border-brand-border/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-8 border-b border-white/10">
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-base font-serif">SH</div>
+            <span class="text-lg font-serif font-bold tracking-wide">Sazón Habana</span>
+          </div>
+          <p class="text-sm text-white/70 max-w-sm">Descubre y vive el sabor de Cuba. Restaurantes auténticos en La Habana.</p>
+        </div>
+        <div class="space-y-4">
+          <h4 class="text-sm font-semibold uppercase tracking-wider text-brand-primary">Explorar</h4>
+          <ul class="space-y-2 text-sm text-white/70">
+            <li><button onclick="navigate('home')" class="hover:text-white">Inicio</button></li>
+            <li><button onclick="navigate('listado')" class="hover:text-white">Restaurantes</button></li>
+            <li><button onclick="navigate('mapa')" class="hover:text-white">Mapa</button></li>
+            <li id="footer-solicitar-link"><button onclick="navigate('solicitar-espacio')" class="hover:text-white">Solicitar espacio</button></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pt-8 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
+        <p class="text-white/70">© 2026 Sazón Habana. Todos los derechos reservados.</p>
+        <div class="flex gap-6">
+          <a href="#" class="text-white/70 hover:text-white transition-colors">Política de privacidad</a>
+          <a href="#" class="text-white/70 hover:text-white transition-colors">Términos de servicio</a>
+          <a href="#" class="text-white/70 hover:text-white transition-colors">Política de cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ============================================
+    // DATA.JS - BASE DE DATOS LOCAL
+    // ============================================
+    const DEFAULT_USERS = [
+      { id: "admin_001", email: "admin@sazonhabana.com", telefono: "50000000", password: "admin123", nombre: "Administrador Sazón", rol: "admin", estado: "activo", preferencias: [], colorPrimario: "#C17A4D", restauranteId: null },
+      { id: "gestor_001", email: "gestor@elbiky.com", telefono: "51111111", password: "biky123", nombre: "Dueño El Biky", rol: "gestor", estado: "activo", preferencias: ["criolla"], colorPrimario: "#5B8A72", restauranteId: "res_001" }
+    ];
+
+    const DEFAULT_RESTAURANTES = [
+      { id: "res_001", nombre: "El Biky", zona: "Vedado", direccion: "Calle Infanta e/ San Lázaro y Concordia", tipo: "rápida", precio: "2", horario: "12:00 PM - 12:00 AM", telefono: "+53 78706515", descripcion: "Complejo gastronómico icónico en Vedado.", img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=600", galeria: ["https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=600","https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=600"], lat: 23.1368, lng: -82.3785, aire: true, clima: true, parqueo: false, platosPopulares: [{ nombre: "Pizza Margarita", precio: "$1200 CUP", descripcion: "Masa delgada, salsa de tomate, mozzarella." }], seccionesCarta: [{ seccion: "Entrantes", platos: [{ nombre: "Croquetas", precio: "$600 CUP" }] }, { seccion: "Platos Fuertes", platos: [{ nombre: "Fettuccine Alfredo", precio: "$1950 CUP" }] }] },
+      { id: "res_002", nombre: "El Aljibe", zona: "Miramar", direccion: "Avenida 7ma e/ 24 y 26", tipo: "criolla", precio: "2", horario: "12:00 PM - 10:00 PM", telefono: "+53 72041584", descripcion: "Famoso restaurante cubano a cielo abierto.", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=600", galeria: ["https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=600"], lat: 23.1252, lng: -82.4190, aire: true, clima: false, parqueo: true, platosPopulares: [{ nombre: "Pollo Asado", precio: "$2500 CUP", descripcion: "Pollo jugoso con salsa secreta." }], seccionesCarta: [{ seccion: "Especialidades", platos: [{ nombre: "Ropa Vieja", precio: "$2800 CUP" }] }] }
+    ];
+
+    const DEFAULT_RESENAS = [{ id: "rev_001", restauranteId: "res_001", usuarioId: "gestor_001", nombreUsuario: "Dueño El Biky", puntuacion: 5, texto: "Excelente lugar.", fecha: "2026-05-15" }];
+    const DEFAULT_SOLICITUDES = [];
+
+    function initDatabase() {
+      if (!localStorage.getItem("sh_usuarios")) localStorage.setItem("sh_usuarios", JSON.stringify(DEFAULT_USERS));
+      if (!localStorage.getItem("sh_restaurantes")) localStorage.setItem("sh_restaurantes", JSON.stringify(DEFAULT_RESTAURANTES));
+      if (!localStorage.getItem("sh_resenas")) localStorage.setItem("sh_resenas", JSON.stringify(DEFAULT_RESENAS));
+      if (!localStorage.getItem("sh_solicitudes")) localStorage.setItem("sh_solicitudes", JSON.stringify(DEFAULT_SOLICITUDES));
+    }
+
+    function getRestaurantes() { return JSON.parse(localStorage.getItem("sh_restaurantes")); }
+    function getRestauranteById(id) { return getRestaurantes().find(r => r.id === id); }
+    function actualizarRestaurante(id, datos) { let rest = getRestaurantes(); let idx = rest.findIndex(r => r.id === id); if(idx !== -1){ rest[idx] = { ...rest[idx], ...datos }; localStorage.setItem("sh_restaurantes", JSON.stringify(rest)); return true; } return false; }
+    function getResenasByRestauranteId(id) { return JSON.parse(localStorage.getItem("sh_resenas")).filter(r => r.restauranteId === id); }
+    function agregarResena(restauranteId, usuarioId, puntuacion, texto) { let resenas = JSON.parse(localStorage.getItem("sh_resenas")); let usuarios = JSON.parse(localStorage.getItem("sh_usuarios")); let user = usuarios.find(u => u.id === usuarioId); let nueva = { id: "rev_" + Date.now(), restauranteId, usuarioId, nombreUsuario: user ? user.nombre : "Anónimo", puntuacion: parseInt(puntuacion), texto, fecha: new Date().toISOString().split('T')[0] }; resenas.push(nueva); localStorage.setItem("sh_resenas", JSON.stringify(resenas)); return true; }
+    function eliminarResena(id) { let resenas = JSON.parse(localStorage.getItem("sh_resenas")); localStorage.setItem("sh_resenas", JSON.stringify(resenas.filter(r => r.id !== id))); return true; }
+    function getSolicitudes() { return JSON.parse(localStorage.getItem("sh_solicitudes")); }
+    function agregarSolicitud(sol) { let solicitudes = getSolicitudes(); sol.id = "sol_" + Date.now(); solicitudes.push(sol); localStorage.setItem("sh_solicitudes", JSON.stringify(solicitudes)); return true; }
+    function aprobarSolicitud(id) {
+      let solicitudes = getSolicitudes(); let sol = solicitudes.find(s => s.id === id); if(!sol) return false;
+      let usuarios = JSON.parse(localStorage.getItem("sh_usuarios")); let nuevoRestId = "res_" + Date.now(); let nuevoGestorId = "usr_" + Date.now();
+      let nuevoGestor = { id: nuevoGestorId, email: sol.emailGestor, telefono: sol.telefono, password: sol.passwordGestor, nombre: sol.nombreGestor, rol: "gestor", restauranteId: nuevoRestId, estado: "activo", preferencias: [sol.tipo], colorPrimario: "#C17A4D" };
+      usuarios.push(nuevoGestor); localStorage.setItem("sh_usuarios", JSON.stringify(usuarios));
+      let nuevoRest = { id: nuevoRestId, nombre: sol.nombre, zona: sol.zona, direccion: sol.direccion, tipo: sol.tipo, precio: sol.precio, horario: sol.horario, telefono: sol.telefono, descripcion: sol.descripcion, img: sol.img || "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=600", galeria: [sol.img], lat: parseFloat(sol.lat), lng: parseFloat(sol.lng), aire: sol.aire, clima: sol.clima, parqueo: sol.parqueo, platosPopulares: [{ nombre: "Especialidad de la Casa", precio: "$1500 CUP" }], seccionesCarta: [{ seccion: "Especialidades", platos: [{ nombre: "Plato Aprobado", precio: "$1500 CUP" }] }] };
+      let restaurantes = getRestaurantes(); restaurantes.push(nuevoRest); localStorage.setItem("sh_restaurantes", JSON.stringify(restaurantes));
+      localStorage.setItem("sh_solicitudes", JSON.stringify(solicitudes.filter(s => s.id !== id)));
+      return true;
+    }
+    function rechazarSolicitud(id) { let solicitudes = getSolicitudes(); localStorage.setItem("sh_solicitudes", JSON.stringify(solicitudes.filter(s => s.id !== id))); return true; }
+
+    function registrarUsuario(nombre, email, telefono, password, rol, preferencias) {
+      let usuarios = JSON.parse(localStorage.getItem("sh_usuarios"));
+      if(usuarios.find(u => u.email === email)) return { exito: false, mensaje: "Email ya registrado" };
+      let nuevo = { id: "usr_" + Date.now(), nombre, email, telefono, password, rol, estado: "activo", restauranteId: null, preferencias, colorPrimario: "#C17A4D" };
+      usuarios.push(nuevo); localStorage.setItem("sh_usuarios", JSON.stringify(usuarios));
+      localStorage.setItem("sh_usuario_actual", JSON.stringify(nuevo));
+      return { exito: true, usuario: nuevo };
+    }
+
+    function iniciarSesion(identificador, password) {
+      let usuarios = JSON.parse(localStorage.getItem("sh_usuarios"));
+      let usuario = usuarios.find(u => (u.email === identificador || u.telefono === identificador) && u.password === password);
+      if(!usuario) return { exito: false, mensaje: "Credenciales incorrectas" };
+      localStorage.setItem("sh_usuario_actual", JSON.stringify(usuario));
+      return { exito: true, usuario };
+    }
+
+    function getUsuarioActual() { return JSON.parse(localStorage.getItem("sh_usuario_actual")); }
+    function cerrarSesion() { localStorage.removeItem("sh_usuario_actual"); navigate('home'); renderAuthNavs(); showToast("Sesión Cerrada", "Vuelve pronto.", "info"); }
+
+    // UI y navegación
+    let activePage = 'home';
+    let listadoCurrentPage = 1;
+    let itemsPerPage = 6;
+    let listadoQuery = '';
+
+    function navigate(pageId, param = null) {
+      activePage = pageId;
+      window.scrollTo(0,0);
+      document.querySelectorAll('.page-view').forEach(v => v.classList.add('hidden'));
+      let target = document.getElementById(`page-${pageId}`);
+      if(target) target.classList.remove('hidden');
+      document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('text-brand-primary','border-brand-primary'); btn.classList.add('text-brand-text','border-transparent'); });
+      let activeBtn = document.getElementById(`nav-${pageId}`);
+      if(activeBtn) { activeBtn.classList.remove('text-brand-text','border-transparent'); activeBtn.classList.add('text-brand-primary','border-brand-primary'); }
+      if(pageId === 'home') renderHomeCarruseles();
+      else if(pageId === 'listado') applyFiltersAndRender();
+      else if(pageId === 'mapa') setTimeout(initMapGeneral, 200);
+      else if(pageId === 'perfil') renderPerfilPage();
+      else if(pageId === 'admin') renderAdminPanel();
+      else if(pageId === 'detalle' && param) renderRestauranteDetalle(param);
+    }
+
+    function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('hidden'); }
+
+    function showToast(title, desc, type="success") {
+      let toast = document.getElementById('toast-notification');
+      let iconWrapper = document.getElementById('toast-icon-wrapper');
+      document.getElementById('toast-title').innerText = title;
+      document.getElementById('toast-desc').innerText = desc;
+      iconWrapper.className = "w-10 h-10 rounded-full flex items-center justify-center text-white";
+      if(type === "success") { iconWrapper.classList.add("bg-green-500"); iconWrapper.innerHTML = '<i class="fa-solid fa-circle-check"></i>'; }
+      else if(type === "error") { iconWrapper.classList.add("bg-red-500"); iconWrapper.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>'; }
+      else { iconWrapper.classList.add("bg-brand-primary"); iconWrapper.innerHTML = '<i class="fa-solid fa-circle-info"></i>'; }
+      toast.classList.remove('translate-x-96','opacity-0'); toast.classList.add('translate-x-0','opacity-100');
+      setTimeout(() => { toast.classList.remove('translate-x-0','opacity-100'); toast.classList.add('translate-x-96','opacity-0'); }, 4000);
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+      let isDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('sh_dark_mode', isDark);
+      let icon = document.getElementById('theme-icon');
+      if(icon) icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      let iconM = document.getElementById('theme-icon-mobile');
+      if(iconM) iconM.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    }
+    
+    function loadSavedTheme() {
+      if(localStorage.getItem('sh_dark_mode') === 'true') { document.documentElement.classList.add('dark'); document.getElementById('theme-icon').className = 'fa-solid fa-sun'; document.getElementById('theme-icon-mobile').className = 'fa-solid fa-sun'; }
+      let color = localStorage.getItem('sh_theme_color') || '#C17A4D';
+      document.documentElement.style.setProperty('--brand-primary', color);
+    }
+    
+    function setThemeColor(color) {
+      document.documentElement.style.setProperty('--brand-primary', color);
+      localStorage.setItem('sh_theme_color', color);
+      let user = getUsuarioActual();
+      if(user) {
+        let usuarios = JSON.parse(localStorage.getItem("sh_usuarios"));
+        let idx = usuarios.findIndex(u => u.id === user.id);
+        if(idx !== -1) { usuarios[idx].colorPrimario = color; localStorage.setItem("sh_usuarios", JSON.stringify(usuarios)); user.colorPrimario = color; localStorage.setItem("sh_usuario_actual", JSON.stringify(user)); }
+      }
+      showToast("Color Actualizado", "La identidad de la aplicación ha cambiado.", "success");
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      let input = document.getElementById(inputId);
+      let icon = btn.querySelector('i');
+      if(input.type === 'password') { input.type = 'text'; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+      else { input.type = 'password'; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+    }
+
+    function toggleAvatarDropdown() { document.getElementById('avatar-dropdown-menu').classList.toggle('show'); }
+
+    function renderAuthNavs() {
+      let user = getUsuarioActual();
+      let container = document.getElementById('auth-buttons-container');
+      let mobileContainer = document.getElementById('auth-buttons-container-mobile');
+      let solicitarNav = document.getElementById('nav-solicitar');
+      let mobileSolicitarNav = document.getElementById('mobile-nav-solicitar');
+      let adminNav = document.getElementById('nav-admin');
+      let mobileAdminNav = document.getElementById('mobile-nav-admin');
+      let footerSolicitar = document.getElementById('footer-solicitar-link');
+
+      if(user && user.rol === 'admin') { adminNav.classList.remove('hidden'); mobileAdminNav.classList.remove('hidden'); }
+      else { adminNav.classList.add('hidden'); mobileAdminNav.classList.add('hidden'); }
+
+      if(user) {
+        solicitarNav.classList.remove('hidden'); mobileSolicitarNav.classList.remove('hidden'); if(footerSolicitar) footerSolicitar.classList.remove('hidden');
+        container.innerHTML = `
+          <div class="avatar-dropdown">
+            <button onclick="toggleAvatarDropdown()" class="flex items-center gap-2 hover:text-brand-primary">
+              <div class="w-9 h-9 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold font-serif text-sm">${user.nombre.substring(0,2).toUpperCase()}</div>
+              <span class="text-sm font-semibold max-w-[120px] truncate text-brand-text">${user.nombre}</span>
+              <i class="fa-solid fa-chevron-down text-xs text-brand-text/50"></i>
+            </button>
+            <div id="avatar-dropdown-menu" class="avatar-dropdown-menu">
+              <button onclick="navigate('perfil'); toggleAvatarDropdown()" class="avatar-dropdown-item"><i class="fa-regular fa-user"></i> Configuración</button>
+              <button onclick="cerrarSesion(); toggleAvatarDropdown()" class="avatar-dropdown-item"><i class="fa-solid fa-arrow-right-from-bracket"></i> Salir</button>
+            </div>
+          </div>
+        `;
+        mobileContainer.innerHTML = `
+          <div class="p-2 bg-brand-card rounded-2xl border border-brand-border flex justify-between items-center">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold">${user.nombre.substring(0,2)}</div><span class="font-bold text-brand-text">${user.nombre}</span></div>
+            <div class="flex gap-2"><button onclick="navigate('perfil'); toggleMobileMenu()" class="text-brand-primary"><i class="fa-regular fa-user text-lg"></i></button><button onclick="cerrarSesion(); toggleMobileMenu()" class="text-red-500"><i class="fa-solid fa-arrow-right-from-bracket text-lg"></i></button></div>
+          </div>
+        `;
+      } else {
+        solicitarNav.classList.add('hidden'); mobileSolicitarNav.classList.add('hidden'); if(footerSolicitar) footerSolicitar.classList.add('hidden');
+        container.innerHTML = `<button onclick="navigate('login')" class="text-brand-text hover:text-brand-primary font-bold text-sm">Iniciar Sesión</button><button onclick="navigate('registro')" class="bg-brand-primary hover:bg-brand-hover text-white px-5 py-2.5 rounded-full text-xs font-bold">Registro</button>`;
+        mobileContainer.innerHTML = `<div class="grid grid-cols-2 gap-3"><button onclick="navigate('login'); toggleMobileMenu()" class="w-full bg-brand-card border border-brand-border text-brand-text py-3 rounded-xl font-bold text-sm">Entrar</button><button onclick="navigate('registro'); toggleMobileMenu()" class="w-full bg-brand-primary text-white py-3 rounded-xl font-bold text-sm">Registrarse</button></div>`;
+      }
+      document.getElementById('avatar-dropdown-menu')?.classList.remove('show');
+    }
+
+    document.addEventListener('click', function(e) { if(!e.target.closest('.avatar-dropdown')) document.getElementById('avatar-dropdown-menu')?.classList.remove('show'); });
+
+    function createRestaurantCard(rest) {
+      let resenas = getResenasByRestauranteId(rest.id);
+      let promedio = resenas.length ? (resenas.reduce((a,b)=>a+b.puntuacion,0)/resenas.length).toFixed(1) : "N/A";
+      let precioSimbolo = "$".repeat(parseInt(rest.precio));
+      let card = document.createElement('div');
+      card.className = "flex-shrink-0 w-72 snap-start bg-brand-card rounded-3xl border border-brand-border overflow-hidden cursor-pointer shadow-sm hover:shadow-xl hover:scale-[1.02] card-transition flex flex-col justify-between";
+      card.setAttribute('onclick', `navigate('detalle', '${rest.id}')`);
+      card.innerHTML = `
+        <div><div class="relative h-44 bg-brand-bg overflow-hidden"><img src="${rest.img}" alt="${rest.nombre}" class="w-full h-full object-cover group-hover:scale-105 card-transition"><span class="absolute top-3 left-3 bg-brand-card/95 backdrop-blur-sm text-brand-text text-[10px] font-extrabold uppercase px-3 py-1 rounded-full border border-brand-border/40"><i class="fa-solid fa-location-dot text-brand-primary text-[8px] mr-1"></i>${rest.zona}</span><span class="absolute top-3 right-3 bg-brand-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-full">★ ${promedio}</span></div><div class="p-5 space-y-2"><div class="flex justify-between items-start"><h3 class="font-serif font-bold text-brand-text text-lg group-hover:text-brand-primary truncate">${rest.nombre}</h3><span class="text-xs font-bold text-brand-secondary">${precioSimbolo}</span></div><p class="text-xs text-brand-text/60 line-clamp-2">${rest.descripcion.substring(0,100)}</p></div></div>
+        <div class="px-5 pb-5 pt-3 border-t border-brand-bg/55 flex items-center justify-between"><div><span class="text-[9px] uppercase tracking-wider text-brand-text/40 font-bold">Plato Estrella</span><span class="text-xs font-bold text-brand-text truncate max-w-[150px] block">${rest.platosPopulares[0].nombre}</span></div><span class="text-[10px] bg-brand-primary/10 text-brand-primary font-bold px-3 py-1.5 rounded-full">Ver Ficha <i class="fa-solid fa-chevron-right text-[8px] ml-1"></i></span></div>
+      `;
+      return card;
+    }
+
+    function renderHomeCarruseles() {
+      let rest = getRestaurantes();
+      let dest = document.getElementById('carrusel-destacados');
+      let vedado = document.getElementById('carrusel-zona-vedado');
+      let vieja = document.getElementById('carrusel-zona-habanavieja');
+      dest.innerHTML = ''; vedado.innerHTML = ''; vieja.innerHTML = '';
+      rest.forEach(r => dest.appendChild(createRestaurantCard(r)));
+      rest.filter(r => r.zona === 'Vedado').forEach(r => vedado.appendChild(createRestaurantCard(r)));
+      rest.filter(r => r.zona === 'Habana Vieja').forEach(r => vieja.appendChild(createRestaurantCard(r)));
+    }
+
+    function handleHeroSearch(e) { e.preventDefault(); let q = document.getElementById('hero-search-input').value.trim(); if(q) { listadoQuery = q; navigate('listado'); applyFiltersAndRender(); } }
+    function quickFilterTipo(tipo) { navigate('listado'); resetAllFilters(); document.getElementById('filter-tipo').value = tipo; applyFiltersAndRender(); }
+    function quickFilterZona(zona) { navigate('listado'); resetAllFilters(); document.getElementById('filter-zona').value = zona; applyFiltersAndRender(); }
+
+    function applyFiltersAndRender() {
+      let rest = getRestaurantes();
+      let zona = document.getElementById('filter-zona')?.value || 'todos';
+      let tipo = document.getElementById('filter-tipo')?.value || 'todos';
+      let precio = document.getElementById('filter-precio')?.value || 'todos';
+      let chkAire = document.getElementById('filter-aire')?.checked || false;
+      let chkClima = document.getElementById('filter-clima')?.checked || false;
+      let chkParqueo = document.getElementById('filter-parqueo')?.checked || false;
+
+      let filtrados = rest.filter(r => {
+        if(zona !== 'todos' && r.zona !== zona) return false;
+        if(tipo !== 'todos' && r.tipo !== tipo) return false;
+        if(precio !== 'todos' && r.precio !== precio) return false;
+        if(chkAire && !r.aire) return false;
+        if(chkClima && !r.clima) return false;
+        if(chkParqueo && !r.parqueo) return false;
+        if(listadoQuery) {
+          let match = r.nombre.toLowerCase().includes(listadoQuery) || r.descripcion.toLowerCase().includes(listadoQuery) || r.tipo.toLowerCase().includes(listadoQuery);
+          if(!match) return false;
+        }
+        return true;
+      });
+
+      let sortVal = document.getElementById('sort-select')?.value || 'pop';
+      if(sortVal === 'name') filtrados.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+      else if(sortVal === 'p-low') filtrados.sort((a,b)=>parseInt(a.precio)-parseInt(b.precio));
+      else if(sortVal === 'p-high') filtrados.sort((a,b)=>parseInt(b.precio)-parseInt(a.precio));
+      else if(sortVal === 'pop') filtrados.sort((a,b)=>{ let rA=getResenasByRestauranteId(a.id); let rB=getResenasByRestauranteId(b.id); let pA=rA.length?rA.reduce((s,c)=>s+c.puntuacion,0)/rA.length:0; let pB=rB.length?rB.reduce((s,c)=>s+c.puntuacion,0)/rB.length:0; return pB-pA; });
+
+      let totalSpan = document.getElementById('total-resultados-count');
+      if(totalSpan) totalSpan.innerText = `Se encontraron ${filtrados.length} establecimientos`;
+
+      let grid = document.getElementById('grid-resultados');
+      let emptyState = document.getElementById('listado-empty-state');
+      grid.innerHTML = '';
+
+      if(filtrados.length === 0) { grid.classList.add('hidden'); emptyState.classList.remove('hidden'); document.getElementById('pagination-controls').innerHTML = ''; return; }
+      grid.classList.remove('hidden'); emptyState.classList.add('hidden');
+
+      let start = (listadoCurrentPage-1)*itemsPerPage;
+      let paginados = filtrados.slice(start, start+itemsPerPage);
+      paginados.forEach(r => grid.appendChild(createRestaurantCard(r)));
+      renderPaginationControls(filtrados.length);
+    }
+
+    function renderPaginationControls(total) {
+      let totalPages = Math.ceil(total/itemsPerPage);
+      let container = document.getElementById('pagination-controls');
+      container.innerHTML = '';
+      if(totalPages <= 1) return;
+      let prev = document.createElement('button');
+      prev.className = `px-3 py-2 rounded-xl border border-brand-border text-sm font-bold ${listadoCurrentPage===1?'opacity-30 cursor-not-allowed':'hover:bg-brand-primary hover:text-white'}`;
+      prev.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+      prev.onclick = () => { if(listadoCurrentPage>1) { listadoCurrentPage--; applyFiltersAndRender(); } };
+      container.appendChild(prev);
+      for(let i=1; i<=totalPages; i++) {
+        let btn = document.createElement('button');
+        btn.className = `w-9 h-9 rounded-xl font-bold text-sm border ${listadoCurrentPage===i?'bg-brand-primary text-white border-brand-primary':'border-brand-border hover:bg-brand-primary hover:text-white'}`;
+        btn.innerText = i;
+        btn.onclick = () => { listadoCurrentPage = i; applyFiltersAndRender(); };
+        container.appendChild(btn);
+      }
+      let next = document.createElement('button');
+      next.className = `px-3 py-2 rounded-xl border border-brand-border text-sm font-bold ${listadoCurrentPage===totalPages?'opacity-30 cursor-not-allowed':'hover:bg-brand-primary hover:text-white'}`;
+      next.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+      next.onclick = () => { if(listadoCurrentPage<totalPages) { listadoCurrentPage++; applyFiltersAndRender(); } };
+      container.appendChild(next);
+    }
+
+    function resetAllFilters() {
+      if(document.getElementById('filter-zona')) document.getElementById('filter-zona').value = 'todos';
+      if(document.getElementById('filter-tipo')) document.getElementById('filter-tipo').value = 'todos';
+      if(document.getElementById('filter-precio')) document.getElementById('filter-precio').value = 'todos';
+      if(document.getElementById('filter-aire')) document.getElementById('filter-aire').checked = false;
+      if(document.getElementById('filter-clima')) document.getElementById('filter-clima').checked = false;
+      if(document.getElementById('filter-parqueo')) document.getElementById('filter-parqueo').checked = false;
+      listadoQuery = '';
+      listadoCurrentPage = 1;
+      applyFiltersAndRender();
+    }
+
+    function openFilterOverlay() { document.getElementById('mobile-filter-overlay').classList.remove('hidden'); }
+    function closeFilterOverlay() { document.getElementById('mobile-filter-overlay').classList.add('hidden'); }
+    function applyMobileFilters() {
+      document.getElementById('filter-zona').value = document.getElementById('m-filter-zona').value;
+      document.getElementById('filter-tipo').value = document.getElementById('m-filter-tipo').value;
+      document.getElementById('filter-precio').value = document.getElementById('m-filter-precio').value;
+      document.getElementById('filter-aire').checked = document.getElementById('m-filter-aire').checked;
+      document.getElementById('filter-clima').checked = document.getElementById('m-filter-clima').checked;
+      document.getElementById('filter-parqueo').checked = document.getElementById('m-filter-parqueo').checked;
+      closeFilterOverlay();
+      listadoCurrentPage = 1;
+      applyFiltersAndRender();
+    }
+    function resetMobileFilters() {
+      document.getElementById('m-filter-zona').value = 'todos';
+      document.getElementById('m-filter-tipo').value = 'todos';
+      document.getElementById('m-filter-precio').value = 'todos';
+      document.getElementById('m-filter-aire').checked = false;
+      document.getElementById('m-filter-clima').checked = false;
+      document.getElementById('m-filter-parqueo').checked = false;
+    }
+
+    let leafletMap = null;
+    function initMapGeneral() {
+      if(leafletMap) leafletMap.remove();
+      leafletMap = L.map('mapa-principal', { zoomControl: false }).setView([23.1136, -82.3666], 12);
+      L.control.zoom({ position: 'topright' }).addTo(leafletMap);
+      let isDark = document.documentElement.classList.contains('dark');
+      let tileUrl = isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+      L.tileLayer(tileUrl, { attribution: '&copy; Carto' }).addTo(leafletMap);
+      updateMapMarkers();
+    }
+    function updateMapMarkers() {
+      if(!leafletMap) return;
+      leafletMap.eachLayer(layer => { if(layer instanceof L.Marker) leafletMap.removeLayer(layer); });
+      let rest = getRestaurantes();
+      let zona = document.getElementById('map-select-zona')?.value || 'todos';
+      let tipo = document.getElementById('map-select-tipo')?.value || 'todos';
+      let chkAire = document.getElementById('map-chk-aire')?.checked || false;
+      let filtrados = rest.filter(r => { if(zona!=='todos' && r.zona!==zona) return false; if(tipo!=='todos' && r.tipo!==tipo) return false; if(chkAire && !r.aire) return false; return true; });
+      filtrados.forEach(r => {
+        let icon = L.divIcon({ className: 'custom-map-pin', html: `<div class="w-8 h-8 rounded-full bg-brand-primary text-white border-2 border-white flex items-center justify-center shadow-lg"><i class="fa-solid fa-utensils text-xs"></i></div>`, iconSize: [32,32], iconAnchor: [16,32] });
+        let marker = L.marker([r.lat, r.lng], { icon }).addTo(leafletMap);
+        let resenas = getResenasByRestauranteId(r.id);
+        let promedio = resenas.length ? (resenas.reduce((a,b)=>a+b.puntuacion,0)/resenas.length).toFixed(1) : "N/A";
+        marker.bindPopup(`<div class="p-2 space-y-2 max-w-[200px]"><img src="${r.img}" class="w-full h-24 object-cover rounded-lg"><h4 class="font-bold text-sm">${r.nombre}</h4><p class="text-xs">${r.tipo} · ${"$".repeat(parseInt(r.precio))}</p><button onclick="navigate('detalle','${r.id}')" class="bg-brand-primary text-white text-xs px-3 py-1 rounded-md mt-2">Ver</button></div>`);
+      });
+    }
+    function resetMapFilters() { document.getElementById('map-select-zona').value='todos'; document.getElementById('map-select-tipo').value='todos'; document.getElementById('map-chk-aire').checked=false; updateMapMarkers(); }
+
+    function renderRestauranteDetalle(id) {
+      let r = getRestauranteById(id); if(!r) return;
+      let resenas = getResenasByRestauranteId(id);
+      let promedio = resenas.length ? (resenas.reduce((a,b)=>a+b.puntuacion,0)/resenas.length).toFixed(1) : "Sin calificaciones";
+      let container = document.getElementById('restaurante-detalle-content');
+      container.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          <div class="lg:col-span-7 space-y-8">
+            <div class="relative h-[300px] sm:h-[400px] bg-brand-bg rounded-3xl overflow-hidden border border-brand-border shadow-sm">
+              <img id="det-main-img" src="${r.img}" class="w-full h-full object-cover">
+              <div class="absolute bottom-4 left-4 flex gap-2">${r.galeria.map((img,i)=>`<button onclick="document.getElementById('det-main-img').src='${img}'" class="w-12 h-12 rounded-xl overflow-hidden border-2 border-white hover:border-brand-primary shadow-md"><img src="${img}" class="w-full h-full object-cover"></button>`).join('')}</div>
+            </div>
+            <div class="space-y-4"><h3 class="font-serif font-bold text-xl text-brand-text"><i class="fa-solid fa-wand-magic-sparkles text-brand-primary"></i> Especialidades Sugeridas</h3><div class="grid grid-cols-1 sm:grid-cols-3 gap-4">${r.platosPopulares.map(p=>`<div class="bg-brand-card p-4 rounded-2xl border border-brand-border/40"><h4 class="font-bold text-sm text-brand-text">${p.nombre}</h4><p class="text-[10px] text-brand-text/50">${p.descripcion||''}</p><span class="text-xs font-extrabold text-brand-primary mt-2 block">${p.precio}</span></div>`).join('')}</div></div>
+            <div class="space-y-4 pt-4 border-t border-brand-border/40"><div class="flex justify-between items-center"><h3 class="font-serif font-bold text-xl text-brand-text"><i class="fa-solid fa-receipt text-brand-primary"></i> Carta Completa</h3></div>${r.seccionesCarta.map((sec,idx)=>`<div class="bg-brand-card rounded-2xl border border-brand-border/60 overflow-hidden"><button onclick="toggleAccordion('acc-${idx}')" class="w-full px-5 py-4 font-bold text-brand-text flex justify-between items-center bg-brand-bg/40 text-sm"><span>${sec.seccion}</span><i id="acc-icon-acc-${idx}" class="fa-solid fa-chevron-down text-brand-primary text-xs transition-transform"></i></button><div id="acc-${idx}" class="hidden p-5 space-y-2 border-t border-brand-border/30"><div class="space-y-2">${sec.platos.map(p=>`<div class="flex justify-between items-center py-2 border-b border-brand-border/20"><span class="font-medium">${p.nombre}</span><span class="font-bold text-brand-primary">${p.precio}</span></div>`).join('')}</div></div></div>`).join('')}</div>
+          </div>
+          <div class="lg:col-span-5 space-y-6">
+            <div class="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4"><div><span class="inline-block text-[10px] bg-brand-secondary/15 text-brand-secondary font-bold uppercase px-3 py-1 rounded-md">Restaurante Oficial</span><h1 class="text-3xl font-serif font-bold text-brand-text mt-2">${r.nombre}</h1><p class="text-xs text-brand-text/50"><i class="fa-solid fa-map-pin"></i> ${r.zona} · La Habana</p></div><div class="flex items-baseline gap-3"><span class="text-3xl font-extrabold text-brand-primary">★ ${promedio}</span><span class="text-xs">(${resenas.length} reseñas)</span></div><p class="text-sm text-brand-text/80 pt-2 border-t border-brand-border/40">${r.descripcion}</p><div class="space-y-2 pt-2"><div class="flex items-center gap-3 text-xs"><i class="fa-regular fa-clock text-brand-primary"></i><span><strong>Horario:</strong> ${r.horario}</span></div><div class="flex items-center gap-3 text-xs"><i class="fa-solid fa-location-arrow text-brand-primary"></i><span><strong>Dirección:</strong> ${r.direccion}</span></div><div class="flex items-center gap-3 text-xs"><i class="fa-solid fa-phone text-brand-primary"></i><span><strong>Reservas:</strong> ${r.telefono}</span></div></div><div class="flex flex-wrap gap-2">${r.aire?'<span class="text-[10px] bg-brand-primary/10 text-brand-primary font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-cloud-sun"></i> Terraza</span>':''}${r.clima?'<span class="text-[10px] bg-brand-primary/10 text-brand-primary font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-snowflake"></i> Climatizado</span>':''}${r.parqueo?'<span class="text-[10px] bg-brand-primary/10 text-brand-primary font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-square-parking"></i> Parqueo</span>':''}</div></div>
+            <div class="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4"><h3 class="font-serif font-bold text-lg border-b border-brand-border/40 pb-2 text-brand-text"><i class="fa-regular fa-comments text-brand-primary"></i> Reseñas</h3><div class="space-y-3 max-h-72 overflow-y-auto custom-scrollbar">${resenas.length===0?'<p class="text-xs text-brand-text/50 text-center py-4">Aún no hay opiniones.</p>':resenas.map(rev=>`<div class="p-3 bg-brand-bg/40 rounded-xl border border-brand-border/20 text-xs"><div class="flex justify-between"><span class="font-bold">${rev.nombreUsuario}</span><span class="text-[10px] text-brand-text/40">${rev.fecha}</span></div><span class="text-brand-primary font-bold">${"★".repeat(rev.puntuacion)}${"☆".repeat(5-rev.puntuacion)}</span><p class="mt-1 text-brand-text/80">${rev.texto}</p></div>`).join('')}</div>${getUsuarioActual()?`<div class="pt-4 border-t border-brand-border/40"><p class="text-xs font-bold uppercase text-brand-text/60">Tu valoración</p><select id="rev-score" class="bg-brand-bg text-brand-text text-xs rounded-lg p-2 border border-brand-border"><option value="5">★★★★★</option><option value="4">★★★★☆</option><option value="3">★★★☆☆</option><option value="2">★★☆☆☆</option><option value="1">★☆☆☆☆</option></select><textarea id="rev-text" rows="3" placeholder="Comparte tu experiencia..." class="w-full bg-brand-bg text-brand-text text-xs p-3 rounded-xl border border-brand-border mt-2"></textarea><button onclick="submitNewReview('${r.id}')" class="w-full mt-3 py-2.5 bg-brand-primary text-white text-xs font-bold rounded-xl">Publicar</button></div>`:`<div class="pt-4 text-center p-4 bg-brand-bg rounded-xl"><p class="text-xs">Inicia sesión para dejar una reseña.</p><button onclick="navigate('login')" class="text-brand-primary font-bold mt-2 text-xs">Iniciar Sesión</button></div>`}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleAccordion(id) {
+      let panel = document.getElementById(id);
+      let icon = document.getElementById(`acc-icon-${id}`);
+      panel.classList.toggle('hidden');
+      if(icon) icon.style.transform = panel.classList.contains('hidden') ? "rotate(0deg)" : "rotate(180deg)";
+    }
+
+    function submitNewReview(restId) {
+      let user = getUsuarioActual();
+      if(!user) return;
+      let score = document.getElementById('rev-score').value;
+      let text = document.getElementById('rev-text').value.trim();
+      if(!text) { showToast("Error", "Escribe tu opinión.", "error"); return; }
+      agregarResena(restId, user.id, score, text);
+      showToast("Reseña Registrada", "Gracias por tu opinión.", "success");
+      renderRestauranteDetalle(restId);
+    }
+
+    function renderPerfilPage() {
+      let user = getUsuarioActual(); if(!user) return;
+      document.getElementById('prof-nombre').value = user.nombre;
+      document.getElementById('prof-email').value = user.email;
+      document.getElementById('prof-telefono').value = user.telefono || '';
+      let resenas = JSON.parse(localStorage.getItem("sh_resenas"));
+      let misResenas = resenas.filter(r => r.usuarioId === user.id);
+      let listDiv = document.getElementById('prof-resenas-list');
+      listDiv.innerHTML = misResenas.length===0 ? '<p class="text-[11px] text-brand-text/40 text-center py-4">No has escrito reseñas.</p>' : misResenas.map(rev => `<div class="p-3 bg-brand-bg rounded-xl border border-brand-border/40 text-[11px] flex justify-between items-center"><span class="truncate max-w-[150px]">${getRestauranteById(rev.restauranteId)?.nombre||''}</span><button onclick="removeUserReview('${rev.id}')" class="text-red-500"><i class="fa-regular fa-trash-can"></i></button></div>`).join('');
+      
+      let gestorPanelRight = document.getElementById('panel-gestor-restaurante-right');
+      let gestorPanelLeft = document.getElementById('panel-gestor-restaurante');
+      
+      if(user.rol === 'gestor' && user.restauranteId) {
+        let rest = getRestauranteById(user.restauranteId);
+        if(rest) {
+          let panelHtml = `<div class="space-y-4"><div><h3 class="font-serif font-bold text-lg text-brand-text">${rest.nombre}</h3><p class="text-xs text-brand-text/50">Panel de gestión activo</p></div><div class="grid grid-cols-1 gap-3"><div><label class="text-xs font-bold uppercase text-brand-text/60">Nombre</label><input type="text" id="gest-nombre" value="${rest.nombre}" class="w-full bg-brand-bg text-brand-text p-3 rounded-xl border border-brand-border"></div><div><label class="text-xs font-bold uppercase text-brand-text/60">Horario</label><input type="text" id="gest-horario" value="${rest.horario}" class="w-full bg-brand-bg text-brand-text p-3 rounded-xl border border-brand-border"></div><div><label class="text-xs font-bold uppercase text-brand-text/60">Descripción</label><textarea id="gest-descripcion" rows="3" class="w-full bg-brand-bg text-brand-text p-3 rounded-xl border border-brand-border">${rest.descripcion}</textarea></div><div><label class="text-xs font-bold uppercase text-brand-text/60">Teléfono</label><input type="text" id="gest-telefono" value="${rest.telefono}" class="w-full bg-brand-bg text-brand-text p-3 rounded-xl border border-brand-border"></div><div><label class="text-xs font-bold uppercase text-brand-text/60">Dirección</label><input type="text" id="gest-direccion" value="${rest.direccion}" class="w-full bg-brand-bg text-brand-text p-3 rounded-xl border border-brand-border"></div><button onclick="saveGestorRestauranteData('${rest.id}')" class="w-full py-3 bg-brand-secondary text-white rounded-xl font-bold text-sm">Actualizar Mi Espacio</button></div></div>`;
+          gestorPanelRight.innerHTML = panelHtml;
+          gestorPanelLeft.innerHTML = panelHtml;
+        }
+      } else {
+        let panelHtml = `<div class="text-center py-6 space-y-4"><div class="w-16 h-16 bg-brand-primary/10 rounded-full flex items-center justify-center text-3xl text-brand-primary mx-auto"><i class="fa-solid fa-utensils"></i></div><div><h3 class="font-serif font-bold text-xl text-brand-text">¿Eres Propietario de un Restaurante?</h3><p class="text-sm text-brand-text/60 mt-2">Promociona tu espacio, gestiona la carta y atrae comensales.</p></div><button onclick="navigate('solicitar-espacio')" class="bg-brand-primary hover:bg-brand-hover text-white text-xs font-bold px-6 py-3 rounded-full">Solicitar mi Espacio</button></div>`;
+        gestorPanelRight.innerHTML = panelHtml;
+        gestorPanelLeft.innerHTML = panelHtml;
+      }
+    }
+
+    function saveProfileData() {
+      let user = getUsuarioActual(); if(!user) return;
+      let nombre = document.getElementById('prof-nombre').value.trim();
+      let telefono = document.getElementById('prof-telefono').value.trim();
+      if(!nombre) { showToast("Error", "El nombre es obligatorio.", "error"); return; }
+      let usuarios = JSON.parse(localStorage.getItem("sh_usuarios"));
+      let idx = usuarios.findIndex(u => u.id === user.id);
+      if(idx !== -1) { usuarios[idx].nombre = nombre; usuarios[idx].telefono = telefono; localStorage.setItem("sh_usuarios", JSON.stringify(usuarios)); user.nombre = nombre; user.telefono = telefono; localStorage.setItem("sh_usuario_actual", JSON.stringify(user)); showToast("Perfil Actualizado", "Cambios guardados.", "success"); renderAuthNavs(); renderPerfilPage(); }
+    }
+
+    function removeUserReview(id) { eliminarResena(id); showToast("Reseña Eliminada", "La valoración ha sido borrada.", "success"); renderPerfilPage(); }
+    function saveGestorRestauranteData(id) {
+      let nombre = document.getElementById('gest-nombre')?.value.trim();
+      let horario = document.getElementById('gest-horario')?.value.trim();
+      let desc = document.getElementById('gest-descripcion')?.value.trim();
+      let telefono = document.getElementById('gest-telefono')?.value.trim();
+      let direccion = document.getElementById('gest-direccion')?.value.trim();
+      if(!nombre||!horario||!desc||!telefono||!direccion) { showToast("Faltan Campos", "Completa todos los campos.", "error"); return; }
+      if(actualizarRestaurante(id, { nombre, horario, descripcion: desc, telefono, direccion })) { showToast("Actualizado", "Tu espacio ha sido actualizado.", "success"); renderPerfilPage(); }
+      else showToast("Error", "No se pudo actualizar.", "error");
+    }
+
+    // Solicitud Wizard
+    let currentWizardStep = 1;
+    let wizardLeafletMap = null;
+    let wizardMarker = null;
+    let simulatedUploadedFileName = "";
+    function initSolicitudWizard() { currentWizardStep = 1; simulatedUploadedFileName = ""; document.getElementById('wiz-file-name').innerText = ""; document.getElementById('wizard-form').reset(); showWizardStep(1); }
+    function showWizardStep(step) {
+      currentWizardStep = step;
+      document.querySelectorAll('.wizard-step').forEach(s => s.classList.add('hidden'));
+      document.getElementById(`wizard-step-${step}`).classList.remove('hidden');
+      for(let i=1;i<=3;i++) { let ind = document.getElementById(`step-indicator-${i}`); let num = document.getElementById(`step-num-${i}`); if(i<step) { ind.className = "flex flex-col items-center flex-1 text-center font-bold text-brand-secondary"; if(num) { num.className = "w-10 h-10 rounded-full bg-brand-secondary text-white flex items-center justify-center font-bold text-base shadow-md mb-2"; num.innerHTML = '<i class="fa-solid fa-check"></i>'; } } else if(i===step) { ind.className = "flex flex-col items-center flex-1 text-center font-bold text-brand-primary"; if(num) { num.className = "w-10 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold text-base shadow-md mb-2"; num.innerHTML = i; } } else { ind.className = "flex flex-col items-center flex-1 text-center font-semibold text-brand-text/45"; if(num) { num.className = "w-10 h-10 rounded-full bg-brand-border/60 text-brand-text/50 flex items-center justify-center font-bold text-base mb-2"; num.innerHTML = i; } } }
+      let btnPrev = document.getElementById('wiz-btn-prev'); let btnNext = document.getElementById('wiz-btn-next'); let btnSubmit = document.getElementById('wiz-btn-submit');
+      btnPrev.disabled = step===1;
+      if(step===3) { btnNext.classList.add('hidden'); btnSubmit.classList.remove('hidden'); } else { btnNext.classList.remove('hidden'); btnSubmit.classList.add('hidden'); }
+      if(step===2) setTimeout(initWizardMap, 200);
+    }
+    function nextWizardStep() {
+      if(currentWizardStep===1) { let n=document.getElementById('wiz-nombre').value.trim(); let t=document.getElementById('wiz-tipo').value; let p=document.getElementById('wiz-precio').value; let h=document.getElementById('wiz-horario').value.trim(); let tel=document.getElementById('wiz-telefono').value.trim(); let d=document.getElementById('wiz-descripcion').value.trim(); if(!n||!t||!p||!h||!tel||!d) { showToast("Faltan Datos", "Completa todos los campos requeridos.", "error"); return; } }
+      if(currentWizardStep===2) { let z=document.getElementById('wiz-zona').value; let dir=document.getElementById('wiz-direccion').value.trim(); if(!z||!dir) { showToast("Falta Ubicación", "Completa zona y dirección.", "error"); return; } }
+      if(currentWizardStep<3) showWizardStep(currentWizardStep+1);
+    }
+    function prevWizardStep() { if(currentWizardStep>1) showWizardStep(currentWizardStep-1); }
+    function initWizardMap() { if(wizardLeafletMap) wizardLeafletMap.remove(); wizardLeafletMap = L.map('wizard-map', { zoomControl: false }).setView([23.1136, -82.3666], 13); L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution: '© OSM' }).addTo(wizardLeafletMap); let dragIcon = L.divIcon({ className: 'wizard-drag-pin', html: '<div class="w-10 h-10 rounded-full bg-brand-primary text-white border-2 border-white flex items-center justify-center shadow-2xl animate-bounce"><i class="fa-solid fa-map-pin"></i></div>', iconSize: [40,40], iconAnchor: [20,40] }); wizardMarker = L.marker([23.1136, -82.3666], { draggable: true, icon: dragIcon }).addTo(wizardLeafletMap); wizardMarker.on('dragend', () => { let pos = wizardMarker.getLatLng(); document.getElementById('wiz-lat').value = pos.lat; document.getElementById('wiz-lng').value = pos.lng; }); wizardLeafletMap.on('click', (e) => { wizardMarker.setLatLng(e.latlng); document.getElementById('wiz-lat').value = e.latlng.lat; document.getElementById('wiz-lng').value = e.latlng.lng; }); }
+    function handleSimulatedFileUpload(e) { let file = e.target.files[0]; if(file) { simulatedUploadedFileName = file.name; document.getElementById('wiz-file-name').innerHTML = `<i class="fa-solid fa-circle-check"></i> Archivo: ${file.name}`; showToast("Archivo Cargado", `Se simuló la carga de ${file.name}`, "success"); } }
+    function handleWizardSubmit(e) { e.preventDefault(); if(!document.getElementById('wiz-chk-responsable').checked) { showToast("Aceptación Obligatoria", "Debes aceptar los términos.", "error"); return; } let user = getUsuarioActual(); let nombreGestor = user ? user.nombre : "Solicitante"; let emailGestor = user ? user.email : "solicitante@ejemplo.com"; let passwordGestor = user ? user.password : "solicitante123"; let nueva = { nombre: document.getElementById('wiz-nombre').value, tipo: document.getElementById('wiz-tipo').value, precio: document.getElementById('wiz-precio').value, horario: document.getElementById('wiz-horario').value, telefono: document.getElementById('wiz-telefono').value, descripcion: document.getElementById('wiz-descripcion').value, img: document.getElementById('wiz-img').value || "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=800", zona: document.getElementById('wiz-zona').value, direccion: document.getElementById('wiz-direccion').value, lat: parseFloat(document.getElementById('wiz-lat').value), lng: parseFloat(document.getElementById('wiz-lng').value), aire: document.getElementById('wiz-chk-aire').checked, clima: document.getElementById('wiz-chk-clima').checked, parqueo: document.getElementById('wiz-chk-parqueo').checked, fileLegal: simulatedUploadedFileName || "documento.pdf", nombreGestor, emailGestor, passwordGestor }; agregarSolicitud(nueva); showToast("Solicitud Enviada", "Tu solicitud será revisada por el equipo.", "success"); navigate('home'); }
+
+    // Admin Panel
+    function renderAdminPanel() { let user = getUsuarioActual(); if(!user || user.rol !== 'admin') { navigate('home'); return; } let solicitudes = getSolicitudes(); let tbody = document.getElementById('admin-table-body'); let badge = document.getElementById('admin-pending-badge'); let empty = document.getElementById('admin-empty-state'); tbody.innerHTML = ''; badge.innerText = solicitudes.length; if(solicitudes.length===0) { empty.classList.remove('hidden'); return; } empty.classList.add('hidden'); solicitudes.forEach(s => { let row = document.createElement('tr'); row.className = "hover:bg-brand-bg/30 text-xs text-brand-text border-b border-brand-border/20"; row.innerHTML = `<td class="p-4 font-bold">${s.nombre}</td><td class="p-4"><div><span class="font-semibold">${s.nombreGestor}</span><br><span class="text-[10px]">${s.emailGestor}</span></div></td><td class="p-4"><span class="capitalize">${s.tipo}</span><br><span class="text-[10px]">${s.zona}</span></td><td class="p-4"><i class="fa-solid fa-file-pdf"></i> ${s.fileLegal}</td><td class="p-4 text-right"><button onclick="approveSolicitud('${s.id}')" class="bg-brand-secondary text-white px-3 py-1.5 rounded-lg mr-2">Aprobar</button><button onclick="rejectSolicitud('${s.id}')" class="bg-red-500 text-white px-3 py-1.5 rounded-lg">Rechazar</button></td>`; tbody.appendChild(row); }); }
+    function approveSolicitud(id) { if(aprobarSolicitud(id)) { showToast("Aprobado", "Restaurante y gestor creados.", "success"); renderAdminPanel(); } }
+    function rejectSolicitud(id) { if(rechazarSolicitud(id)) { showToast("Rechazado", "Solicitud eliminada.", "info"); renderAdminPanel(); } }
+
+    function handleLogin(e) { e.preventDefault(); let id = document.getElementById('login-id').value.trim(); let pass = document.getElementById('login-password').value; let res = iniciarSesion(id, pass); if(res.exito) { if(res.usuario.colorPrimario) setThemeColor(res.usuario.colorPrimario); renderAuthNavs(); navigate('home'); showToast("Bienvenido", `Hola ${res.usuario.nombre}`, "success"); } else showToast("Error", res.mensaje, "error"); }
+    function handleRegister(e) { e.preventDefault(); let nombre = document.getElementById('reg-nombre').value.trim(); let email = document.getElementById('reg-email').value.trim(); let telefono = document.getElementById('reg-telefono').value.trim(); let pass = document.getElementById('reg-password').value; let confirmPass = document.getElementById('reg-confirm-password').value; if(pass !== confirmPass) { showToast("Error", "Las contraseñas no coinciden.", "error"); return; } if(pass.length<4) { showToast("Error", "Contraseña mínimo 4 caracteres.", "error"); return; } let rol = document.querySelector('input[name="reg-rol"]:checked').value; let prefs = []; ['criolla','rápida','pizza','mariscos','cafetería'].forEach(p => { let btn = document.getElementById(`reg-pref-${p}`); if(btn && btn.classList.contains('bg-brand-primary')) prefs.push(p); }); let res = registrarUsuario(nombre, email, telefono, pass, rol, prefs); if(res.exito) { showToast("Registro Exitoso", "Cuenta creada.", "success"); renderAuthNavs(); navigate('home'); } else showToast("Error", res.mensaje, "error"); }
+    function toggleRegPref(pref) { let btn = document.getElementById(`reg-pref-${pref}`); btn.classList.toggle('bg-brand-bg'); btn.classList.toggle('text-brand-text'); btn.classList.toggle('bg-brand-primary'); btn.classList.toggle('text-white'); }
+    function simulateRecovery() { let email = prompt("Escribe tu correo:"); if(email) showToast("Recuperación", "Se ha enviado un enlace simulado.", "info"); }
+    function openChangePasswordModal() { document.getElementById('modal-change-password').classList.remove('hidden'); }
+    function closeChangePasswordModal() { document.getElementById('modal-change-password').classList.add('hidden'); document.getElementById('m-old-pass').value = ''; document.getElementById('m-new-pass').value = ''; }
+    function submitChangePassword() { let user = getUsuarioActual(); let oldP = document.getElementById('m-old-pass').value; let newP = document.getElementById('m-new-pass').value; if(oldP !== user.password) { showToast("Error", "Contraseña actual incorrecta.", "error"); return; } if(newP.length<4) { showToast("Error", "Mínimo 4 caracteres.", "error"); return; } let usuarios = JSON.parse(localStorage.getItem("sh_usuarios")); let idx = usuarios.findIndex(u => u.id === user.id); if(idx !== -1) { usuarios[idx].password = newP; localStorage.setItem("sh_usuarios", JSON.stringify(usuarios)); user.password = newP; localStorage.setItem("sh_usuario_actual", JSON.stringify(user)); showToast("Actualizada", "Contraseña cambiada.", "success"); closeChangePasswordModal(); } }
+    function openDeleteAccountModal() { document.getElementById('modal-delete-account').classList.remove('hidden'); }
+    function closeDeleteAccountModal() { document.getElementById('modal-delete-account').classList.add('hidden'); document.getElementById('m-del-confirm').value = ''; }
+    function submitDeleteAccount() { let confirm = document.getElementById('m-del-confirm').value.trim(); if(confirm !== "ELIMINAR") { showToast("Error", "Escribe ELIMINAR", "error"); return; } let user = getUsuarioActual(); let usuarios = JSON.parse(localStorage.getItem("sh_usuarios")); let idx = usuarios.findIndex(u => u.id === user.id); if(idx !== -1) { usuarios[idx].estado = "eliminado_pendiente"; localStorage.setItem("sh_usuarios", JSON.stringify(usuarios)); localStorage.removeItem("sh_usuario_actual"); renderAuthNavs(); navigate('home'); showToast("Cuenta en Gracia", "Se eliminará en 14 días.", "info"); } }
+
+    window.onload = function() { initDatabase(); loadSavedTheme(); renderAuthNavs(); navigate('home'); };
+  </script>
+</body>
+</html>
