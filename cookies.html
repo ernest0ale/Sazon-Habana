@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Política de Cookies - Sazón Habana</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="frontend/css/styles.css">
+  <link rel="stylesheet" href="frontend/css/politicas.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'brand-bg': 'var(--brand-bg)',
+            'brand-text': 'var(--brand-text)',
+            'brand-primary': 'var(--brand-primary)',
+            'brand-secondary': '#5B8A72',
+            'brand-border': 'var(--brand-border)',
+            'brand-card': 'var(--brand-card)',
+            'brand-hover': 'var(--brand-hover)',
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- HEADER (igual que privacidad.html) -->
+  <header class="sticky top-0 z-40 border-b border-brand-border shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3 md:w-auto w-full justify-center md:justify-start">
+        <button onclick="toggleMobileMenu()" id="mobile-menu-btn-header" class="md:hidden text-brand-text hover:text-brand-primary focus:outline-none p-2 absolute left-4">
+          <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+        <a href="index.html" class="flex items-center gap-2 group mobile-header-logo md:mx-0 mx-auto">
+          <div class="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-serif">SH</div>
+          <div class="flex flex-col">
+            <span class="text-xl md:text-2xl font-serif font-bold text-brand-text tracking-wide transition-colors group-hover:text-brand-primary leading-none">Sazón Habana</span>
+            <span class="text-[10px] uppercase tracking-widest text-brand-secondary font-bold mt-0.5 hidden md:block">Gastronomía Cubana</span>
+          </div>
+        </a>
+      </div>
+      <nav class="hidden md:flex space-x-8">
+        <a href="index.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-house"></i> Inicio</a>
+        <a href="espacios.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-utensils"></i> Espacios</a>
+        <a href="mapa.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-map"></i> Mapa</a>
+        <a id="nav-solicitar" href="solicitarEspacio.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent hidden flex items-center gap-2"><i class="fa-solid fa-store"></i> Solicitar espacio</a>
+        <a id="nav-mi-espacio" href="miEspacio.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent hidden flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Mi espacio</a>
+        <a href="admin.html" id="nav-admin" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent hidden flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> Admin Panel</a>
+      </nav>
+      <div class="flex items-center gap-4">
+        <button onclick="toggleDarkMode()" class="text-brand-text hover:text-brand-primary p-2 text-xl"><i id="theme-icon" class="fa-solid fa-moon"></i></button>
+        <div id="auth-buttons-container" class="flex items-center"></div>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-brand-bg border-b border-brand-border py-4 px-6 space-y-3 shadow-inner">
+      <a href="index.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-house mr-3 mobile-nav-icon"></i> Inicio</a>
+      <a href="espacios.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-utensils mr-3 mobile-nav-icon"></i> Espacios</a>
+      <a href="mapa.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-map mr-3 mobile-nav-icon"></i> Mapa</a>
+      <a id="mobile-nav-solicitar" href="solicitarEspacio.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2 hidden"><i class="fa-solid fa-store mr-3 mobile-nav-icon"></i> Solicitar espacio</a>
+      <a id="mobile-nav-mi-espacio" href="miEspacio.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2 hidden"><i class="fa-solid fa-pen-to-square mr-3 mobile-nav-icon"></i> Mi espacio</a>
+      <a id="mobile-nav-admin" href="admin.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2 hidden"><i class="fa-solid fa-shield-halved mr-3 mobile-nav-icon"></i> Admin Panel</a>
+      <div id="auth-buttons-container-mobile" class="pt-2 space-y-2"></div>
+    </div>
+  </header>
+
+  <main class="flex-grow py-12">
+    <div class="policy-content">
+      <h1>Política de Cookies</h1>
+      <p class="policy-meta">Última actualización: 23 de junio de 2026</p>
+      <p>En <strong>Sazón Habana</strong>, utilizamos cookies para mejorar tu experiencia en nuestra plataforma. Esta política explica qué son las cookies, cómo las usamos y cómo puedes gestionarlas.</p>
+      <h2>1. ¿Qué son las cookies?</h2>
+      <p>Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas un sitio web. Nos ayudan a recordar tus preferencias y a analizar cómo interactúas con nuestra plataforma.</p>
+      <h2>2. Tipos de cookies que utilizamos</h2>
+      <ul>
+        <li><strong>Cookies esenciales:</strong> necesarias para el funcionamiento básico de la plataforma (ej. mantener tu sesión iniciada).</li>
+        <li><strong>Cookies de preferencias:</strong> recuerdan tus configuraciones como el tema oscuro o tus preferencias culinarias.</li>
+        <li><strong>Cookies analíticas:</strong> nos ayudan a entender cómo los usuarios interactúan con Sazón Habana para mejorar nuestros servicios.</li>
+      </ul>
+      <h2>3. Gestión de cookies</h2>
+      <p>Puedes gestionar o desactivar las cookies desde la configuración de tu navegador. Ten en cuenta que algunas funcionalidades de la plataforma podrían verse afectadas si desactivas las cookies.</p>
+      <h2>4. Cookies de terceros</h2>
+      <p>No utilizamos cookies de terceros para publicidad. Solo empleamos cookies propias para mejorar tu experiencia y analizar el uso de la plataforma.</p>
+      <h2>5. Contacto</h2>
+      <p>Si tienes preguntas sobre nuestra política de cookies, contáctanos en: <strong>cookies@sazonhabana.com</strong></p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-brand-text text-white py-12 border-t border-brand-border/20 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-8 border-b border-white/10">
+        <div class="space-y-4 text-center md:text-left">
+          <div class="flex items-center gap-2 justify-center md:justify-start">
+            <div class="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-base font-serif">SH</div>
+            <span class="text-lg font-serif font-bold tracking-wide">Sazón Habana</span>
+          </div>
+          <p class="text-sm text-white/70 max-w-sm mx-auto md:mx-0">Descubre y vive el sabor de Cuba. Restaurantes auténticos en La Habana.</p>
+        </div>
+        <div class="space-y-4 text-center md:text-left">
+          <h4 class="text-sm font-semibold uppercase tracking-wider text-brand-primary inline-block md:inline-block">Explorar</h4>
+          <ul class="space-y-2 text-sm text-white/70">
+            <li><a href="index.html" class="hover:text-white">Inicio</a></li>
+            <li><a href="espacios.html" class="hover:text-white">Espacios</a></li>
+            <li><a href="mapa.html" class="hover:text-white">Mapa</a></li>
+            <li id="footer-solicitar-link"><a href="solicitarEspacio.html" class="hover:text-white">Solicitar espacio</a></li>
+            <li id="footer-mi-espacio-link" class="hidden"><a href="miEspacio.html" class="hover:text-white">Mi espacio</a></li>
+            <li id="footer-admin-link" class="hidden"><a href="admin.html" class="hover:text-white">Admin Panel</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pt-8 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
+        <p class="text-white/70 text-center md:text-left">© 2026 Sazón Habana. Todos los derechos reservados.</p>
+        <div class="flex gap-6 flex-wrap justify-center">
+          <a href="privacidad.html" class="text-white/70 hover:text-white transition-colors">Política de privacidad</a>
+          <a href="terminos.html" class="text-white/70 hover:text-white transition-colors">Términos de servicio</a>
+          <a href="cookies.html" class="text-white/70 hover:text-white transition-colors">Política de cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- BACKEND -->
+  <script src="backend/data.js"></script>
+  <script src="backend/auth.js"></script>
+  <script src="backend/resenas.js"></script>
+  <script src="backend/solicitudes.js"></script>
+
+  <!-- SCRIPTS FRONTEND -->
+  <script src="frontend/scripts/main.js"></script>
+  <script src="frontend/scripts/auth.js"></script>
+
+  <script>
+    window.onload = function() {
+      initDatabase();
+      loadSavedTheme();
+      renderAuthNavs();
+    };
+  </script>
+</body>
+</html>

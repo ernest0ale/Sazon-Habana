@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Sazón Habana – Sabores únicos hechos con Amor</title>
+  <title>Perfil - Sazón Habana</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,8 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <link rel="stylesheet" href="frontend/css/styles.css">
-  <link rel="stylesheet" href="frontend/css/home.css">
-  <link rel="stylesheet" href="frontend/css/listado.css">
+  <link rel="stylesheet" href="frontend/css/perfil.css">
 
   <script>
     tailwind.config = {
@@ -46,27 +45,13 @@
     <div><h4 id="toast-title" class="font-bold text-sm"></h4><p id="toast-desc" class="text-xs opacity-80"></p></div>
   </div>
 
-  <!-- SEARCH OVERLAY -->
-  <div id="search-overlay" class="search-overlay">
-    <div class="search-overlay-container">
-      <div class="search-input-wrapper">
-        <input type="text" id="search-overlay-input" placeholder="Buscar restaurantes, platos o zonas..." onkeypress="if(event.key==='Enter'){executeSearch();}" oninput="handleSearchSuggestions()">
-        <button class="search-submit-btn" onclick="executeSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
-        <button class="search-overlay-close" onclick="closeSearchOverlay()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div id="search-suggestions" class="search-results-suggestions"></div>
-    </div>
-  </div>
-
-  <!-- HEADER -->
+  <!-- HEADER (igual que login.html) -->
   <header class="sticky top-0 z-40 border-b border-brand-border shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-
       <div class="flex items-center gap-3 md:w-auto w-full justify-center md:justify-start">
         <button onclick="toggleMobileMenu()" id="mobile-menu-btn-header" class="md:hidden text-brand-text hover:text-brand-primary focus:outline-none p-2 absolute left-4">
           <i class="fa-solid fa-bars text-2xl"></i>
         </button>
-
         <a href="index.html" class="flex items-center gap-2 group mobile-header-logo md:mx-0 mx-auto">
           <div class="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-serif">SH</div>
           <div class="flex flex-col">
@@ -75,24 +60,19 @@
           </div>
         </a>
       </div>
-
       <nav class="hidden md:flex space-x-8">
-        <a href="index.html" id="nav-home" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-brand-primary flex items-center gap-2"><i class="fa-solid fa-house"></i> Inicio</a>
-        <a href="espacios.html" id="nav-listado" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-utensils"></i> Espacios</a>
-        <a href="mapa.html" id="nav-mapa" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-map"></i> Mapa</a>
+        <a href="index.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-house"></i> Inicio</a>
+        <a href="espacios.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-utensils"></i> Espacios</a>
+        <a href="mapa.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-map"></i> Mapa</a>
         <a id="nav-solicitar" href="solicitarEspacio.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent hidden flex items-center gap-2"><i class="fa-solid fa-store"></i> Solicitar espacio</a>
         <a id="nav-mi-espacio" href="miEspacio.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent hidden flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Mi espacio</a>
         <a href="admin.html" id="nav-admin" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent hidden flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> Admin Panel</a>
       </nav>
-
       <div class="flex items-center gap-4">
-        <button onclick="openSearchOverlay()" class="text-brand-text hover:text-brand-primary p-2 text-xl"><i class="fa-solid fa-magnifying-glass"></i></button>
         <button onclick="toggleDarkMode()" class="text-brand-text hover:text-brand-primary p-2 text-xl"><i id="theme-icon" class="fa-solid fa-moon"></i></button>
         <div id="auth-buttons-container" class="flex items-center"></div>
       </div>
     </div>
-
-    <!-- MENÚ MÓVIL DESPLEGABLE -->
     <div id="mobile-menu" class="hidden md:hidden bg-brand-bg border-b border-brand-border py-4 px-6 space-y-3 shadow-inner">
       <a href="index.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-house mr-3 mobile-nav-icon"></i> Inicio</a>
       <a href="espacios.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-utensils mr-3 mobile-nav-icon"></i> Espacios</a>
@@ -104,104 +84,69 @@
     </div>
   </header>
 
-  <main class="flex-grow">
-
-    <!-- HOME -->
-    <section id="page-home" class="page-view">
-      <div class="relative bg-gradient-to-br from-[#E8F0E5] to-brand-bg dark:from-[#1A241C] dark:to-brand-bg overflow-hidden py-16 md:py-24">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <span class="inline-block text-brand-primary uppercase tracking-widest text-xs md:text-sm font-bold bg-brand-primary/10 px-3 py-1 rounded-full">🍲 Sabor auténtico y cubanía</span>
-              <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-brand-text leading-tight">Descubre el Paladar de <br><span class="italic text-brand-primary underline decoration-brand-border">La Habana</span></h1>
-              <p class="text-lg md:text-xl text-brand-text/80 max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">De los restaurantes más elegantes del Vedado y Miramar, a las joyas escondidas en la Habana Vieja. Encuentra cartas completas y ubicaciones.</p>
-              <div class="pt-4 max-w-2xl mx-auto lg:mx-0">
-                <form onsubmit="handleHeroSearch(event)" class="bg-brand-card p-2 rounded-2xl md:rounded-full border border-brand-border shadow-lg flex flex-col md:flex-row gap-2 items-center">
-                  <div class="flex items-center gap-3 px-3 py-2 w-full">
-                    <i class="fa-solid fa-magnifying-glass text-brand-primary text-xl"></i>
-                    <input type="text" id="hero-search-input" placeholder="¿Qué se te antoja hoy? (pizzas, criolla, mariscos, helados...)" class="bg-transparent text-brand-text placeholder-brand-text/50 outline-none w-full text-base">
-                  </div>
-                  <button type="submit" class="w-full md:w-auto bg-brand-primary hover:bg-brand-hover text-white px-8 py-3 rounded-xl md:rounded-full font-semibold">Buscar</button>
-                </form>
-              </div>
+  <main class="flex-grow py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <span class="text-brand-primary uppercase tracking-widest text-xs font-bold">Tu Cuenta</span>
+        <h1 class="text-4xl font-serif font-bold text-brand-text mt-1">Configuración del Perfil</h1>
+        <p class="text-brand-text/70 mt-3">Personaliza tu experiencia y gestiona tu restaurante.</p>
+      </div>
+      <div class="space-y-6">
+        <div class="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4">
+          <h3 class="font-serif font-bold text-lg border-b border-brand-border/40 pb-2 text-brand-text"><i class="fa-regular fa-id-card text-brand-primary"></i> Datos Personales</h3>
+          <div class="space-y-4">
+            <div><label class="text-xs font-bold uppercase text-brand-text/60">Nombre Completo</label><input type="text" id="prof-nombre" class="w-full bg-brand-bg text-brand-text p-3 rounded-xl border border-brand-border outline-none"></div>
+            <div><label class="text-xs font-bold uppercase text-brand-text/60">Correo Electrónico</label><input type="email" id="prof-email" disabled class="w-full bg-brand-bg text-brand-text p-3 rounded-xl border border-brand-border outline-none opacity-50"></div>
+            <div><label class="text-xs font-bold uppercase text-brand-text/60">Teléfono</label><input type="tel" id="prof-telefono" maxlength="8" class="w-full bg-brand-bg text-brand-text p-3 rounded-xl border border-brand-border outline-none"></div>
+            <button onclick="saveProfileData()" class="w-full py-2.5 bg-brand-primary hover:bg-brand-hover text-white rounded-xl text-xs font-bold">Guardar Cambios</button>
+          </div>
+        </div>
+        <div class="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4">
+          <h3 class="font-serif font-bold text-lg border-b border-brand-border/40 pb-2 text-brand-text"><i class="fa-solid fa-wand-magic-sparkles text-brand-primary"></i> Apariencia</h3>
+          <div><p class="text-xs text-brand-text/60 font-semibold mb-2">Color de identidad:</p>
+            <div class="flex gap-3">
+              <button onclick="setThemeColor('#5B8A72')" class="w-8 h-8 rounded-full bg-[#5B8A72] border-2 border-transparent hover:scale-110"></button>
+              <button onclick="setThemeColor('#4A735A')" class="w-8 h-8 rounded-full bg-[#4A735A] hover:scale-110"></button>
+              <button onclick="setThemeColor('#7BA88E')" class="w-8 h-8 rounded-full bg-[#7BA88E] hover:scale-110"></button>
+              <button onclick="setThemeColor('#3D6B4F')" class="w-8 h-8 rounded-full bg-[#3D6B4F] hover:scale-110"></button>
+              <button onclick="setThemeColor('#6A967C')" class="w-8 h-8 rounded-full bg-[#6A967C] hover:scale-110"></button>
             </div>
-            <div class="lg:col-span-5 relative">
-              <div class="relative mx-auto max-w-[400px] lg:max-w-none">
-                <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=800" alt="Plato cubano" class="rounded-3xl shadow-xl border-4 border-brand-card object-cover w-full h-[350px] md:h-[450px] relative z-10" />
-              </div>
-            </div>
+          </div>
+        </div>
+        <div class="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4">
+          <h3 class="font-serif font-bold text-lg border-b border-brand-border/40 pb-2 text-brand-text"><i class="fa-regular fa-star-half-stroke text-brand-primary"></i> Mis Reseñas</h3>
+          <div id="prof-resenas-list" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar"></div>
+        </div>
+        <div class="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4">
+          <h3 class="font-serif font-bold text-lg border-b border-brand-border/40 pb-2 text-red-500"><i class="fa-solid fa-shield-halved"></i> Seguridad</h3>
+          <div class="space-y-3">
+            <button onclick="openChangePasswordModal()" class="w-full text-left p-3 bg-brand-bg hover:border-brand-primary border border-brand-border rounded-xl text-xs font-semibold flex items-center justify-between"><span>Cambiar Contraseña</span> <i class="fa-solid fa-key text-brand-primary"></i></button>
+            <button onclick="openDeleteAccountModal()" class="w-full text-left p-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-xl text-xs font-semibold flex items-center justify-between"><span>Eliminar Cuenta</span> <i class="fa-solid fa-trash"></i></button>
           </div>
         </div>
       </div>
+    </div>
 
-      <section class="py-12 bg-brand-card/30 border-y border-brand-border/40">
-        <div class="max-w-7xl mx-auto px-4">
-          <p class="text-center text-xs uppercase tracking-widest text-brand-primary font-bold mb-6">Busca según tus antojos</p>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-4">
-            <a href="espacios.html?tipo=criolla" class="home-category-btn">
-              <i class="fa-solid fa-utensils cat-icon"></i>
-              <span class="cat-label">Comida Criolla</span>
-            </a>
-            <a href="espacios.html?tipo=rápida" class="home-category-btn">
-              <i class="fa-solid fa-burger cat-icon"></i>
-              <span class="cat-label">Comida Rápida</span>
-            </a>
-            <a href="espacios.html?tipo=italiana" class="home-category-btn">
-              <i class="fa-solid fa-pizza-slice cat-icon"></i>
-              <span class="cat-label">Comida Italiana</span>
-            </a>
-            <a href="espacios.html?tipo=mariscos" class="home-category-btn">
-              <i class="fa-solid fa-fish cat-icon"></i>
-              <span class="cat-label">Mariscos & Pescado</span>
-            </a>
-            <a href="espacios.html?tipo=cafetería" class="home-category-btn">
-              <i class="fa-solid fa-mug-hot cat-icon"></i>
-              <span class="cat-label">Cafetería</span>
-            </a>
-            <a href="espacios.html?tipo=heladería" class="home-category-btn">
-              <i class="fa-solid fa-ice-cream cat-icon"></i>
-              <span class="cat-label">Heladería</span>
-            </a>
-            <a href="espacios.html?tipo=dulcería" class="home-category-btn">
-              <i class="fa-solid fa-cake-candles cat-icon"></i>
-              <span class="cat-label">Dulcería</span>
-            </a>
-          </div>
+    <!-- MODALES -->
+    <div id="modal-change-password" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+      <div class="bg-brand-card rounded-3xl p-6 max-w-sm w-full border border-brand-border shadow-2xl space-y-4">
+        <div class="flex justify-between items-center"><h4 class="font-bold text-brand-text">Cambiar Contraseña</h4><button onclick="closeChangePasswordModal()" class="text-brand-text/60 hover:text-brand-primary text-xl"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="space-y-3">
+          <div class="password-wrapper"><input type="password" id="m-old-pass" placeholder="Contraseña actual" class="w-full bg-brand-bg text-brand-text p-2.5 rounded-xl border border-brand-border outline-none text-sm"><button type="button" class="toggle-password" onclick="togglePasswordVisibility('m-old-pass', this)"><i class="fa-regular fa-eye-slash"></i></button></div>
+          <div class="password-wrapper"><input type="password" id="m-new-pass" placeholder="Nueva contraseña" class="w-full bg-brand-bg text-brand-text p-2.5 rounded-xl border border-brand-border outline-none text-sm"><button type="button" class="toggle-password" onclick="togglePasswordVisibility('m-new-pass', this)"><i class="fa-regular fa-eye-slash"></i></button></div>
         </div>
-      </section>
+        <button onclick="submitChangePassword()" class="w-full py-2.5 bg-brand-primary text-white font-bold rounded-xl text-xs">Actualizar Contraseña</button>
+      </div>
+    </div>
 
-      <!-- Carruseles -->
-      <section class="py-16 space-y-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div id="home-nuevos-container">
-          <div class="flex justify-between items-end mb-6">
-            <div>
-              <span class="text-brand-primary uppercase tracking-widest text-xs font-bold">🆕 Nuevos Espacios</span>
-              <h2 class="text-3xl font-serif font-bold text-brand-text">Descubre los más recientes</h2>
-            </div>
-          </div>
-          <div id="carrusel-nuevos" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
-        </div>
-        <div id="home-populares-container">
-          <div class="flex justify-between items-end mb-6">
-            <div>
-              <span class="text-brand-primary uppercase tracking-widest text-xs font-bold">🌟 Más Destacados</span>
-              <h2 class="text-3xl font-serif font-bold text-brand-text">Los favoritos de la comunidad</h2>
-            </div>
-          </div>
-          <div id="carrusel-populares" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
-        </div>
-        <div id="home-mejores-container">
-          <div class="flex justify-between items-end mb-6">
-            <div>
-              <span class="text-brand-primary uppercase tracking-widest text-xs font-bold">⭐ Mejores Reseñas</span>
-              <h2 class="text-3xl font-serif font-bold text-brand-text">Los que tienen las mejores reseñas</h2>
-            </div>
-          </div>
-          <div id="carrusel-mejor-valorados" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
-        </div>
-      </section>
-    </section>
-
+    <div id="modal-delete-account" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+      <div class="bg-brand-card rounded-3xl p-6 max-w-md w-full border border-brand-border shadow-2xl space-y-4">
+        <div class="flex justify-between items-center"><h4 class="font-bold text-red-500">¿Eliminar tu cuenta?</h4><button onclick="closeDeleteAccountModal()" class="text-brand-text/60 hover:text-brand-primary text-xl"><i class="fa-solid fa-xmark"></i></button></div>
+        <p class="text-xs text-brand-text/80">Tendrás 14 días para cancelar esta acción. Pasado ese tiempo, tus datos se eliminarán permanentemente.</p>
+        <input type="text" id="m-del-confirm" placeholder="Escribe ELIMINAR" class="w-full bg-brand-bg text-brand-text p-2.5 rounded-xl border border-brand-border outline-none text-sm">
+        <div class="flex gap-3"><button onclick="closeDeleteAccountModal()" class="flex-1 py-2.5 bg-brand-bg border border-brand-border font-bold rounded-xl text-xs">Cancelar</button><button onclick="submitDeleteAccount()" class="flex-1 py-2.5 bg-red-600 text-white font-bold rounded-xl text-xs">Confirmar</button></div>
+      </div>
+    </div>
   </main>
 
   <!-- FOOTER -->
@@ -246,6 +191,7 @@
 
   <!-- SCRIPTS FRONTEND -->
   <script src="frontend/scripts/main.js"></script>
+  <script src="frontend/scripts/perfil.js"></script>
   <script src="frontend/scripts/auth.js"></script>
 
   <script>
@@ -253,8 +199,13 @@
       initDatabase();
       loadSavedTheme();
       renderAuthNavs();
-      renderHomeCarruseles();
-      updateMunicipioFilters();
+      
+      const user = getUsuarioActual();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      renderPerfilPage();
     };
   </script>
 </body>

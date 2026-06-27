@@ -1,0 +1,10 @@
+/* ============================================
+   ADMIN.CSS - ESTILOS DEL PANEL ADMIN
+   ============================================ */
+
+#admin-table-body tr {
+  transition: background 0.2s ease;
+}
+#admin-table-body tr:hover {
+  background: var(--brand-bg);
+}

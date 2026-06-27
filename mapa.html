@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mapa - Sazón Habana</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <link rel="stylesheet" href="frontend/css/styles.css">
+  <link rel="stylesheet" href="frontend/css/mapa.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'brand-bg': 'var(--brand-bg)',
+            'brand-text': 'var(--brand-text)',
+            'brand-primary': 'var(--brand-primary)',
+            'brand-secondary': '#5B8A72',
+            'brand-border': 'var(--brand-border)',
+            'brand-card': 'var(--brand-card)',
+            'brand-hover': 'var(--brand-hover)',
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-notification" class="fixed top-24 right-6 z-50 transform translate-x-96 opacity-0 transition-all duration-300 flex items-center gap-3 bg-brand-card border border-brand-border px-5 py-4 rounded-2xl shadow-xl max-w-sm">
+    <div id="toast-icon-wrapper" class="w-10 h-10 rounded-full flex items-center justify-center text-white"></div>
+    <div><h4 id="toast-title" class="font-bold text-sm"></h4><p id="toast-desc" class="text-xs opacity-80"></p></div>
+  </div>
+
+  <!-- SEARCH OVERLAY -->
+  <div id="search-overlay" class="search-overlay" style="display:none;">
+    <div class="search-overlay-container">
+      <div class="search-input-wrapper">
+        <input type="text" id="search-overlay-input" placeholder="Buscar restaurantes, platos o zonas..." onkeypress="if(event.key==='Enter'){executeSearch();}" oninput="handleSearchSuggestions()">
+        <button class="search-submit-btn" onclick="executeSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button class="search-overlay-close" onclick="closeSearchOverlay()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="search-suggestions" class="search-results-suggestions"></div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 border-b border-brand-border shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+
+      <div class="flex items-center gap-3 md:w-auto w-full justify-center md:justify-start">
+        <button onclick="toggleMobileMenu()" id="mobile-menu-btn-header" class="md:hidden text-brand-text hover:text-brand-primary focus:outline-none p-2 absolute left-4">
+          <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+
+        <a href="index.html" class="flex items-center gap-2 group mobile-header-logo md:mx-0 mx-auto">
+          <div class="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-serif">SH</div>
+          <div class="flex flex-col">
+            <span class="text-xl md:text-2xl font-serif font-bold text-brand-text tracking-wide transition-colors group-hover:text-brand-primary leading-none">Sazón Habana</span>
+            <span class="text-[10px] uppercase tracking-widest text-brand-secondary font-bold mt-0.5 hidden md:block">Gastronomía Cubana</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="hidden md:flex space-x-8">
+        <a href="index.html" id="nav-home" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-house"></i> Inicio</a>
+        <a href="espacios.html" id="nav-listado" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-utensils"></i> Espacios</a>
+        <a href="mapa.html" id="nav-mapa" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-brand-primary flex items-center gap-2"><i class="fa-solid fa-map"></i> Mapa</a>
+        <a id="nav-solicitar" href="solicitarEspacio.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent hidden flex items-center gap-2"><i class="fa-solid fa-store"></i> Solicitar espacio</a>
+        <a id="nav-mi-espacio" href="miEspacio.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent hidden flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Mi espacio</a>
+        <a href="admin.html" id="nav-admin" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent hidden flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> Admin Panel</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <button onclick="openSearchOverlay()" class="text-brand-text hover:text-brand-primary p-2 text-xl"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button onclick="toggleDarkMode()" class="text-brand-text hover:text-brand-primary p-2 text-xl"><i id="theme-icon" class="fa-solid fa-moon"></i></button>
+        <div id="auth-buttons-container" class="flex items-center"></div>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden bg-brand-bg border-b border-brand-border py-4 px-6 space-y-3 shadow-inner">
+      <a href="index.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-house mr-3 mobile-nav-icon"></i> Inicio</a>
+      <a href="espacios.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-utensils mr-3 mobile-nav-icon"></i> Espacios</a>
+      <a href="mapa.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-map mr-3 mobile-nav-icon"></i> Mapa</a>
+      <a id="mobile-nav-solicitar" href="solicitarEspacio.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2 hidden"><i class="fa-solid fa-store mr-3 mobile-nav-icon"></i> Solicitar espacio</a>
+      <a id="mobile-nav-mi-espacio" href="miEspacio.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2 hidden"><i class="fa-solid fa-pen-to-square mr-3 mobile-nav-icon"></i> Mi espacio</a>
+      <a id="mobile-nav-admin" href="admin.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2 hidden"><i class="fa-solid fa-shield-halved mr-3 mobile-nav-icon"></i> Admin Panel</a>
+      <div id="auth-buttons-container-mobile" class="pt-2 space-y-2"></div>
+    </div>
+  </header>
+
+  <main class="flex-grow">
+    <!-- MAPA -->
+    <section id="page-mapa" class="page-view relative">
+      <div class="w-full h-[calc(100vh-80px)] flex flex-col relative">
+        <div id="mapa-principal" class="w-full flex-grow" style="z-index:1;position:relative;"></div>
+        <div class="absolute bottom-6 left-4 right-4 md:left-6 md:right-6 lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:w-full lg:max-w-4xl z-20 bg-brand-bg/95 backdrop-blur-md border border-brand-border rounded-3xl p-4 shadow-2xl flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <span class="text-xs uppercase font-bold text-brand-primary bg-brand-primary/10 px-2 py-1 rounded-md"><i class="fa-solid fa-map-pin"></i> Filtrar</span>
+            <select id="map-select-municipio" onchange="updateMapMarkers()" class="bg-brand-card text-brand-text text-xs rounded-xl p-2.5 border border-brand-border outline-none">
+              <option value="todos">Todos los Municipios</option>
+            </select>
+            <select id="map-select-tipo" onchange="updateMapMarkers()" class="bg-brand-card text-brand-text text-xs rounded-xl p-2.5 border border-brand-border outline-none">
+              <option value="todos">Todos los Tipos</option>
+              <option value="criolla">Comida Criolla</option>
+              <option value="rápida">Comida Rápida</option>
+              <option value="italiana">Comida Italiana</option>
+              <option value="mariscos">Mariscos</option>
+              <option value="cafetería">Cafeterías</option>
+              <option value="heladería">Heladerías</option>
+              <option value="dulcería">Dulcerías</option>
+            </select>
+            <div class="map-filter-amenities">
+              <label><input type="checkbox" id="map-chk-aire" onchange="updateMapMarkers()"> Terraza</label>
+              <label><input type="checkbox" id="map-chk-clima" onchange="updateMapMarkers()"> Climatizado</label>
+              <label><input type="checkbox" id="map-chk-parqueo" onchange="updateMapMarkers()"> Parqueo</label>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 text-xs font-semibold w-full md:w-auto justify-end border-t md:border-t-0 pt-2 md:pt-0 border-brand-border/35">
+            <button onclick="resetMapFilters()" class="text-brand-primary font-bold hover:underline">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- BACKEND -->
+  <script src="backend/data.js"></script>
+  <script src="backend/auth.js"></script>
+  <script src="backend/resenas.js"></script>
+  <script src="backend/solicitudes.js"></script>
+
+  <!-- SCRIPTS FRONTEND -->
+  <script src="frontend/scripts/main.js"></script>
+  <script src="frontend/scripts/mapa.js"></script>
+  <script src="frontend/scripts/auth.js"></script>
+
+  <script>
+    window.onload = function() {
+      initDatabase();
+      loadSavedTheme();
+      renderAuthNavs();
+      updateMunicipioFilters();
+      setTimeout(initMapGeneral, 300);
+    };
+  </script>
+</body>
+</html>
