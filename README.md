@@ -20,16 +20,6 @@ Esta versión de Sazón Habana está diseñada para ser un **directorio público
 |------|--------|-----------------|
 | 🚶 **Visitante** | Sin registro | Ver todos los restaurantes, buscar, filtrar, ver detalles y cartas, ver mapa, compartir información, obtener indicaciones. |
 
-## 🖥️ Vista previa
-
-| Página de Inicio (Landing) | Listado de Espacios |
-|--------------|-------------------|
-| ![Landing](screenshots/home.png) | ![Listado](screenshots/espacios.png) |
-
-| Vista de Detalle | Mapa Interactivo |
-|-----------------|------------------|
-| ![Detalle](screenshots/detalle.png) | ![Mapa](screenshots/mapa.png) |
-
 ## Tecnologías utilizadas
 
 - HTML5, CSS3, JavaScript (Vanilla)
