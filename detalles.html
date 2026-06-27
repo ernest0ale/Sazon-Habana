@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Sazón Habana – Sabores únicos hechos con Amor</title>
+  <title>Detalle - Sazón Habana</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   
   <link rel="stylesheet" href="frontend/css/styles.css">
-  <link rel="stylesheet" href="frontend/css/home.css">
-  <link rel="stylesheet" href="frontend/css/listado.css">
+  <link rel="stylesheet" href="frontend/css/detalle.css">
+  <link rel="stylesheet" href="frontend/css/mapa.css">
 
   <script>
     tailwind.config = {
@@ -41,7 +42,7 @@
 <body class="min-h-screen flex flex-col antialiased">
 
   <!-- SEARCH OVERLAY -->
-  <div id="search-overlay" class="search-overlay">
+  <div id="search-overlay" class="search-overlay" style="display:none;">
     <div class="search-overlay-container">
       <div class="search-input-wrapper">
         <input type="text" id="search-overlay-input" placeholder="Buscar restaurantes, platos o zonas..." onkeypress="if(event.key==='Enter'){executeSearch();}" oninput="handleSearchSuggestions()">
@@ -71,7 +72,7 @@
       </div>
 
       <nav class="hidden md:flex space-x-8">
-        <a href="index.html" id="nav-home" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-brand-primary flex items-center gap-2"><i class="fa-solid fa-house"></i> Inicio</a>
+        <a href="index.html" id="nav-home" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-house"></i> Inicio</a>
         <a href="espacios.html" id="nav-listado" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-utensils"></i> Espacios</a>
         <a href="mapa.html" id="nav-mapa" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-map"></i> Mapa</a>
       </nav>
@@ -82,7 +83,6 @@
       </div>
     </div>
 
-    <!-- MENÚ MÓVIL -->
     <div id="mobile-menu" class="hidden md:hidden bg-brand-bg border-b border-brand-border py-4 px-6 space-y-3 shadow-inner">
       <a href="index.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-house mr-3 mobile-nav-icon"></i> Inicio</a>
       <a href="espacios.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-utensils mr-3 mobile-nav-icon"></i> Espacios</a>
@@ -91,103 +91,25 @@
   </header>
 
   <main class="flex-grow">
-
-    <!-- HOME -->
-    <section id="page-home" class="page-view">
-      <div class="relative bg-gradient-to-br from-[#E8F0E5] to-brand-bg dark:from-[#1A241C] dark:to-brand-bg overflow-hidden py-16 md:py-24">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <span class="inline-block text-brand-primary uppercase tracking-widest text-xs md:text-sm font-bold bg-brand-primary/10 px-3 py-1 rounded-full">🍲 Sabor auténtico y cubanía</span>
-              <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-brand-text leading-tight">Descubre el Paladar de <br><span class="italic text-brand-primary underline decoration-brand-border">La Habana</span></h1>
-              <p class="text-lg md:text-xl text-brand-text/80 max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">De los restaurantes más elegantes del Vedado y Miramar, a las joyas escondidas en la Habana Vieja. Encuentra cartas completas y ubicaciones.</p>
-              <div class="pt-4 max-w-2xl mx-auto lg:mx-0">
-                <form onsubmit="handleHeroSearch(event)" class="bg-brand-card p-2 rounded-2xl md:rounded-full border border-brand-border shadow-lg flex flex-col md:flex-row gap-2 items-center">
-                  <div class="flex items-center gap-3 px-3 py-2 w-full">
-                    <i class="fa-solid fa-magnifying-glass text-brand-primary text-xl"></i>
-                    <input type="text" id="hero-search-input" placeholder="¿Qué se te antoja hoy? (pizzas, criolla, mariscos, helados...)" class="bg-transparent text-brand-text placeholder-brand-text/50 outline-none w-full text-base">
-                  </div>
-                  <button type="submit" class="w-full md:w-auto bg-brand-primary hover:bg-brand-hover text-white px-8 py-3 rounded-xl md:rounded-full font-semibold">Buscar</button>
-                </form>
-              </div>
-            </div>
-            <div class="lg:col-span-5 relative">
-              <div class="relative mx-auto max-w-[400px] lg:max-w-none">
-                <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=800" alt="Plato cubano" class="rounded-3xl shadow-xl border-4 border-brand-card object-cover w-full h-[350px] md:h-[450px] relative z-10" />
-              </div>
-            </div>
-          </div>
-        </div>
+    <!-- DETALLE -->
+    <section id="page-detalle" class="page-view py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <a href="espacios.html" class="inline-flex items-center gap-2 text-brand-text hover:text-brand-primary font-medium mb-6 transition-colors group">
+          <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i> Volver
+        </a>
+        <div id="restaurante-detalle-content" class="space-y-8"></div>
       </div>
-
-      <section class="py-12 bg-brand-card/30 border-y border-brand-border/40">
-        <div class="max-w-7xl mx-auto px-4">
-          <p class="text-center text-xs uppercase tracking-widest text-brand-primary font-bold mb-6">Busca según tus antojos</p>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-4">
-            <a href="espacios.html?tipo=criolla" class="home-category-btn">
-              <i class="fa-solid fa-utensils cat-icon"></i>
-              <span class="cat-label">Comida Criolla</span>
-            </a>
-            <a href="espacios.html?tipo=rápida" class="home-category-btn">
-              <i class="fa-solid fa-burger cat-icon"></i>
-              <span class="cat-label">Comida Rápida</span>
-            </a>
-            <a href="espacios.html?tipo=italiana" class="home-category-btn">
-              <i class="fa-solid fa-pizza-slice cat-icon"></i>
-              <span class="cat-label">Comida Italiana</span>
-            </a>
-            <a href="espacios.html?tipo=mariscos" class="home-category-btn">
-              <i class="fa-solid fa-fish cat-icon"></i>
-              <span class="cat-label">Mariscos & Pescado</span>
-            </a>
-            <a href="espacios.html?tipo=cafetería" class="home-category-btn">
-              <i class="fa-solid fa-mug-hot cat-icon"></i>
-              <span class="cat-label">Cafetería</span>
-            </a>
-            <a href="espacios.html?tipo=heladería" class="home-category-btn">
-              <i class="fa-solid fa-ice-cream cat-icon"></i>
-              <span class="cat-label">Heladería</span>
-            </a>
-            <a href="espacios.html?tipo=dulcería" class="home-category-btn">
-              <i class="fa-solid fa-cake-candles cat-icon"></i>
-              <span class="cat-label">Dulcería</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <!-- Carruseles -->
-      <section class="py-16 space-y-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div id="home-nuevos-container">
-          <div class="flex justify-between items-end mb-6">
-            <div>
-              <span class="text-brand-primary uppercase tracking-widest text-xs font-bold">🆕 Nuevos Espacios</span>
-              <h2 class="text-3xl font-serif font-bold text-brand-text">Descubre los más recientes</h2>
-            </div>
-          </div>
-          <div id="carrusel-nuevos" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
-        </div>
-        <div id="home-populares-container">
-          <div class="flex justify-between items-end mb-6">
-            <div>
-              <span class="text-brand-primary uppercase tracking-widest text-xs font-bold">🌟 Más Destacados</span>
-              <h2 class="text-3xl font-serif font-bold text-brand-text">Los favoritos de la comunidad</h2>
-            </div>
-          </div>
-          <div id="carrusel-populares" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
-        </div>
-        <div id="home-mejores-container">
-          <div class="flex justify-between items-end mb-6">
-            <div>
-              <span class="text-brand-primary uppercase tracking-widest text-xs font-bold">⭐ Mejores Reseñas</span>
-              <h2 class="text-3xl font-serif font-bold text-brand-text">Los que tienen las mejores reseñas</h2>
-            </div>
-          </div>
-          <div id="carrusel-mejor-valorados" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
-        </div>
-      </section>
     </section>
 
+    <!-- MODAL CARTA -->
+    <div id="carta-modal-overlay" class="hidden fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4" onclick="if(event.target===this) closeCartaModal()">
+      <div id="carta-modal-content" class="bg-brand-card rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6"></div>
+    </div>
+
+    <!-- MODAL COMPARTIR -->
+    <div id="compartir-modal-overlay" class="hidden fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4" onclick="if(event.target===this) closeCompartirModal()">
+      <div id="compartir-modal-content" class="bg-brand-card rounded-3xl max-w-md w-full p-6 border border-brand-border shadow-2xl"></div>
+    </div>
   </main>
 
   <!-- FOOTER -->
@@ -221,17 +143,27 @@
     </div>
   </footer>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
   <!-- BACKEND -->
   <script src="backend/data.js"></script>
 
   <!-- SCRIPTS FRONTEND -->
   <script src="frontend/scripts/main.js"></script>
+  <script src="frontend/scripts/detalle.js"></script>
 
   <script>
     window.onload = function() {
       loadSavedTheme();
-      renderHomeCarruseles();
-      updateMunicipioFilters();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+      
+      if (id) {
+        renderRestauranteDetalle(id);
+      } else {
+        document.getElementById('restaurante-detalle-content').innerHTML = '<p class="text-center py-12">No se especificó un restaurante.</p>';
+      }
     };
   </script>
 </body>

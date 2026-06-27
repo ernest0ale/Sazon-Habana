@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Espacios - Sazón Habana</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="frontend/css/styles.css">
+  <link rel="stylesheet" href="frontend/css/listado.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'brand-bg': 'var(--brand-bg)',
+            'brand-text': 'var(--brand-text)',
+            'brand-primary': 'var(--brand-primary)',
+            'brand-secondary': '#5B8A72',
+            'brand-border': 'var(--brand-border)',
+            'brand-card': 'var(--brand-card)',
+            'brand-hover': 'var(--brand-hover)',
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- SEARCH OVERLAY -->
+  <div id="search-overlay" class="search-overlay">
+    <div class="search-overlay-container">
+      <div class="search-input-wrapper">
+        <input type="text" id="search-overlay-input" placeholder="Buscar restaurantes, platos o zonas..." onkeypress="if(event.key==='Enter'){executeSearch();}" oninput="handleSearchSuggestions()">
+        <button class="search-submit-btn" onclick="executeSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button class="search-overlay-close" onclick="closeSearchOverlay()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="search-suggestions" class="search-results-suggestions"></div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 border-b border-brand-border shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+
+      <div class="flex items-center gap-3 md:w-auto w-full justify-center md:justify-start">
+        <button onclick="toggleMobileMenu()" id="mobile-menu-btn-header" class="md:hidden text-brand-text hover:text-brand-primary focus:outline-none p-2 absolute left-4">
+          <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+
+        <a href="index.html" class="flex items-center gap-2 group mobile-header-logo md:mx-0 mx-auto">
+          <div class="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-serif">SH</div>
+          <div class="flex flex-col">
+            <span class="text-xl md:text-2xl font-serif font-bold text-brand-text tracking-wide transition-colors group-hover:text-brand-primary leading-none">Sazón Habana</span>
+            <span class="text-[10px] uppercase tracking-widest text-brand-secondary font-bold mt-0.5 hidden md:block">Gastronomía Cubana</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="hidden md:flex space-x-8">
+        <a href="index.html" id="nav-home" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-house"></i> Inicio</a>
+        <a href="espacios.html" id="nav-listado" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-brand-primary flex items-center gap-2"><i class="fa-solid fa-utensils"></i> Espacios</a>
+        <a href="mapa.html" id="nav-mapa" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-map"></i> Mapa</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <button onclick="openSearchOverlay()" class="text-brand-text hover:text-brand-primary p-2 text-xl"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button onclick="toggleDarkMode()" class="text-brand-text hover:text-brand-primary p-2 text-xl"><i id="theme-icon" class="fa-solid fa-moon"></i></button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden bg-brand-bg border-b border-brand-border py-4 px-6 space-y-3 shadow-inner">
+      <a href="index.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-house mr-3 mobile-nav-icon"></i> Inicio</a>
+      <a href="espacios.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-utensils mr-3 mobile-nav-icon"></i> Espacios</a>
+      <a href="mapa.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-map mr-3 mobile-nav-icon"></i> Mapa</a>
+    </div>
+  </header>
+
+  <main class="flex-grow">
+    <!-- LISTADO -->
+    <section id="page-listado" class="page-view py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-6 bg-brand-card p-4 rounded-2xl border border-brand-border flex-wrap gap-4">
+          <div class="flex items-center gap-3">
+            <button onclick="openFilterOverlay()" class="lg:hidden bg-brand-primary text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 text-sm shadow-md"><i class="fa-solid fa-sliders"></i> Filtros</button>
+            <span class="hidden lg:block text-brand-text/60 text-sm font-semibold" id="total-resultados-count"></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-bold uppercase text-brand-text/60">Ordenar:</label>
+            <select id="sort-select" onchange="applyFiltersAndRender()" class="bg-brand-bg text-brand-text text-sm rounded-xl px-3 py-2 border border-brand-border outline-none">
+              <option value="pop">Popularidad</option>
+              <option value="p-low">Precio: Menor a Mayor</option>
+              <option value="p-high">Precio: Mayor a Menor</option>
+              <option value="name">Nombre (A-Z)</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-col-reverse lg:flex-row">
+          <div class="col-span-1 lg:col-span-9 space-y-8">
+            <div id="grid-resultados-listado" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="listado-empty-state" class="hidden text-center py-16 bg-brand-card rounded-3xl border border-brand-border">
+              <span class="text-5xl">🍽️</span>
+              <p class="text-lg text-brand-text/70 font-medium mt-4">No se encontraron espacios con esos filtros.</p>
+              <button onclick="resetAllFilters()" class="mt-4 bg-brand-primary text-white px-6 py-2.5 rounded-full font-bold">Mostrar todos</button>
+            </div>
+            <div id="pagination-listado" class="pagination-wrapper"></div>
+          </div>
+          <div class="hidden lg:block lg:col-span-3 space-y-6 bg-brand-card p-6 rounded-3xl border border-brand-border sticky top-24 h-fit order-last lg:order-none">
+            <div class="flex justify-between items-center pb-4 border-b border-brand-border/40">
+              <h3 class="font-serif font-bold text-lg text-brand-text"><i class="fa-solid fa-filter text-brand-primary"></i> Filtrar</h3>
+              <button onclick="resetAllFilters()" class="text-xs text-brand-primary hover:underline font-bold">Limpiar</button>
+            </div>
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Municipio</label>
+              <select id="filter-municipio" onchange="applyFiltersAndRender()" class="w-full bg-brand-bg text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none">
+                <option value="todos">Cualquier Municipio</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Tipo de Cocina</label>
+              <select id="filter-tipo" onchange="applyFiltersAndRender()" class="w-full bg-brand-bg text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none">
+                <option value="todos">Cualquier Tipo</option>
+                <option value="criolla">Comida Criolla</option>
+                <option value="rápida">Comida Rápida</option>
+                <option value="italiana">Comida Italiana</option>
+                <option value="mariscos">Mariscos</option>
+                <option value="cafetería">Cafetería</option>
+                <option value="heladería">Heladería</option>
+                <option value="dulcería">Dulcería</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Rango de Precios</label>
+              <select id="filter-precio" onchange="applyFiltersAndRender()" class="w-full bg-brand-bg text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none">
+                <option value="todos">Cualquier precio</option>
+                <option value="1">Económico ($)</option>
+                <option value="2">Moderado ($$)</option>
+                <option value="3">Premium ($$$)</option>
+              </select>
+            </div>
+            <div class="pt-2 border-t border-brand-border/40">
+              <label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold mb-2">Comodidades</label>
+              <div class="space-y-2">
+                <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="filter-aire" onchange="applyFiltersAndRender()" class="rounded text-brand-primary w-4 h-4"><span>Terraza</span></label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="filter-clima" onchange="applyFiltersAndRender()" class="rounded text-brand-primary w-4 h-4"><span>Climatizado</span></label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="filter-parqueo" onchange="applyFiltersAndRender()" class="rounded text-brand-primary w-4 h-4"><span>Parqueo Privado</span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OVERLAY FILTROS MÓVIL -->
+    <div id="mobile-filter-overlay" class="hidden fixed inset-0 z-50 overflow-hidden bg-black/60 flex justify-end">
+      <div class="bg-brand-bg w-full max-w-sm h-full overflow-y-auto p-6 shadow-2xl flex flex-col justify-between">
+        <div>
+          <div class="flex justify-between items-center pb-4 border-b border-brand-border/50 mb-6">
+            <h3 class="font-serif font-bold text-xl text-brand-text"><i class="fa-solid fa-sliders text-brand-primary"></i> Filtros</h3>
+            <button onclick="closeFilterOverlay()" class="text-2xl text-brand-text/60"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="space-y-6">
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Municipio</label>
+              <select id="m-filter-municipio" class="w-full bg-brand-card text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none">
+                <option value="todos">Cualquier Municipio</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Tipo de Cocina</label>
+              <select id="m-filter-tipo" class="w-full bg-brand-card text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none">
+                <option value="todos">Cualquier Tipo</option>
+                <option value="criolla">Comida Criolla</option>
+                <option value="rápida">Comida Rápida</option>
+                <option value="italiana">Comida Italiana</option>
+                <option value="mariscos">Mariscos</option>
+                <option value="cafetería">Cafetería</option>
+                <option value="heladería">Heladería</option>
+                <option value="dulcería">Dulcería</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold">Precio</label>
+              <select id="m-filter-precio" class="w-full bg-brand-card text-brand-text text-sm rounded-xl p-3 border border-brand-border outline-none">
+                <option value="todos">Cualquier precio</option>
+                <option value="1">Económico ($)</option>
+                <option value="2">Moderado ($$)</option>
+                <option value="3">Premium ($$$)</option>
+              </select>
+            </div>
+            <div class="pt-2">
+              <label class="block text-xs uppercase tracking-wider text-brand-text/60 font-bold mb-2">Comodidades</label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="m-filter-aire" class="rounded text-brand-primary w-4 h-4"><span>Terraza</span></label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="m-filter-clima" class="rounded text-brand-primary w-4 h-4"><span>Climatizado</span></label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="m-filter-parqueo" class="rounded text-brand-primary w-4 h-4"><span>Parqueo Privado</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="pt-6 border-t border-brand-border/50 flex gap-4 mt-8">
+          <button onclick="resetMobileFilters()" class="flex-1 py-3 bg-brand-card border border-brand-border rounded-xl font-bold text-sm text-brand-text">Limpiar todo</button>
+          <button onclick="applyMobileFilters()" class="flex-1 py-3 bg-brand-primary text-white rounded-xl font-bold text-sm">Aplicar</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-brand-text text-white py-12 border-t border-brand-border/20 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-8 border-b border-white/10">
+        <div class="space-y-4 text-center md:text-left">
+          <div class="flex items-center gap-2 justify-center md:justify-start">
+            <div class="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-base font-serif">SH</div>
+            <span class="text-lg font-serif font-bold tracking-wide">Sazón Habana</span>
+          </div>
+          <p class="text-sm text-white/70 max-w-sm mx-auto md:mx-0">Descubre y vive el sabor de Cuba. Restaurantes auténticos en La Habana.</p>
+        </div>
+        <div class="space-y-4 text-center md:text-left">
+          <h4 class="text-sm font-semibold uppercase tracking-wider text-brand-primary inline-block md:inline-block">Explorar</h4>
+          <ul class="space-y-2 text-sm text-white/70">
+            <li><a href="index.html" class="hover:text-white">Inicio</a></li>
+            <li><a href="espacios.html" class="hover:text-white">Espacios</a></li>
+            <li><a href="mapa.html" class="hover:text-white">Mapa</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pt-8 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
+        <p class="text-white/70 text-center md:text-left">© 2026 Sazón Habana. Todos los derechos reservados.</p>
+        <div class="flex gap-6 flex-wrap justify-center">
+          <a href="privacidad.html" class="text-white/70 hover:text-white transition-colors">Política de privacidad</a>
+          <a href="terminos.html" class="text-white/70 hover:text-white transition-colors">Términos de servicio</a>
+          <a href="cookies.html" class="text-white/70 hover:text-white transition-colors">Política de cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- BACKEND -->
+  <script src="backend/data.js"></script>
+
+  <!-- SCRIPTS FRONTEND -->
+  <script src="frontend/scripts/main.js"></script>
+
+  <script>
+    window.onload = function() {
+      loadSavedTheme();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const q = urlParams.get('q');
+      const tipo = urlParams.get('tipo');
+      
+      if (q) {
+        listadoQuery = q;
+      }
+      if (tipo) {
+        const tipoSelect = document.getElementById('filter-tipo');
+        if (tipoSelect) tipoSelect.value = tipo;
+      }
+      
+      updateMunicipioFilters();
+      applyFiltersAndRender();
+    };
+  </script>
+</body>
+</html>

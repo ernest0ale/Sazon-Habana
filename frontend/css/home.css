@@ -1,0 +1,51 @@
+/* ============================================
+   HOME.CSS - ESTILOS DE LA PÁGINA PRINCIPAL
+   ============================================ */
+
+.home-category-btn {
+  padding: 1rem;
+  background: var(--brand-card);
+  border: 1px solid var(--brand-border);
+  border-radius: 1rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+.home-category-btn:hover {
+  border-color: var(--brand-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.home-category-btn .cat-icon {
+  font-size: 1.75rem;
+  color: var(--brand-primary);
+}
+.home-category-btn .cat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--brand-text);
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Carrusel */
+.carrusel-card {
+  flex-shrink: 0;
+  width: 280px;
+  scroll-snap-align: start;
+}
+
+/* Hero Section */
+.hero-gradient {
+  background: linear-gradient(135deg, #E8F0E5 0%, var(--brand-bg) 100%);
+}
+.dark .hero-gradient {
+  background: linear-gradient(135deg, #1A241C 0%, var(--brand-bg) 100%);
+}

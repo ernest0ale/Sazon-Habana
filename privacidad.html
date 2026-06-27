@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Política de Privacidad - Sazón Habana</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="frontend/css/styles.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'brand-bg': 'var(--brand-bg)',
+            'brand-text': 'var(--brand-text)',
+            'brand-primary': 'var(--brand-primary)',
+            'brand-secondary': '#5B8A72',
+            'brand-border': 'var(--brand-border)',
+            'brand-card': 'var(--brand-card)',
+            'brand-hover': 'var(--brand-hover)',
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .policy-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    .policy-content h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--brand-text);
+      margin-bottom: 0.5rem;
+    }
+    .policy-content .policy-meta {
+      font-size: 0.85rem;
+      color: var(--brand-text);
+      opacity: 0.5;
+      margin-bottom: 2rem;
+    }
+    .policy-content h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--brand-text);
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+    .policy-content p {
+      color: var(--brand-text);
+      opacity: 0.8;
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+    .policy-content ul {
+      color: var(--brand-text);
+      opacity: 0.8;
+      line-height: 1.7;
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .policy-content ul li {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 border-b border-brand-border shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3 md:w-auto w-full justify-center md:justify-start">
+        <button onclick="toggleMobileMenu()" id="mobile-menu-btn-header" class="md:hidden text-brand-text hover:text-brand-primary focus:outline-none p-2 absolute left-4">
+          <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+        <a href="index.html" class="flex items-center gap-2 group mobile-header-logo md:mx-0 mx-auto">
+          <div class="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-serif">SH</div>
+          <div class="flex flex-col">
+            <span class="text-xl md:text-2xl font-serif font-bold text-brand-text tracking-wide transition-colors group-hover:text-brand-primary leading-none">Sazón Habana</span>
+            <span class="text-[10px] uppercase tracking-widest text-brand-secondary font-bold mt-0.5 hidden md:block">Gastronomía Cubana</span>
+          </div>
+        </a>
+      </div>
+      <nav class="hidden md:flex space-x-8">
+        <a href="index.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-house"></i> Inicio</a>
+        <a href="espacios.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-utensils"></i> Espacios</a>
+        <a href="mapa.html" class="nav-btn text-brand-text hover:text-brand-primary font-bold text-base pb-1 border-b-2 border-transparent flex items-center gap-2"><i class="fa-solid fa-map"></i> Mapa</a>
+      </nav>
+      <div class="flex items-center gap-4">
+        <button onclick="toggleDarkMode()" class="text-brand-text hover:text-brand-primary p-2 text-xl"><i id="theme-icon" class="fa-solid fa-moon"></i></button>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-brand-bg border-b border-brand-border py-4 px-6 space-y-3 shadow-inner">
+      <a href="index.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-house mr-3 mobile-nav-icon"></i> Inicio</a>
+      <a href="espacios.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-utensils mr-3 mobile-nav-icon"></i> Espacios</a>
+      <a href="mapa.html" class="block w-full text-left font-serif text-lg text-brand-text hover:text-brand-primary py-2"><i class="fa-solid fa-map mr-3 mobile-nav-icon"></i> Mapa</a>
+    </div>
+  </header>
+
+  <main class="flex-grow py-12">
+    <div class="policy-content">
+      <h1>Política de Privacidad</h1>
+      <p class="policy-meta">Última actualización: 23 de junio de 2026</p>
+      <p>En <strong>Sazón Habana</strong>, nos comprometemos a proteger tu privacidad. Esta política explica cómo recopilamos, usamos y protegemos tu información personal cuando utilizas nuestra plataforma.</p>
+      <h2>1. Información que recopilamos</h2>
+      <p>Recopilamos la siguiente información cuando interactúas con nuestra plataforma:</p>
+      <ul>
+        <li><strong>Datos de navegación:</strong> dirección IP, tipo de navegador, dispositivo y cookies.</li>
+        <li><strong>Interacciones:</strong> páginas visitadas y tiempo de navegación.</li>
+      </ul>
+      <h2>2. Cómo usamos tu información</h2>
+      <p>Utilizamos tus datos para:</p>
+      <ul>
+        <li>Personalizar tu experiencia mostrándote restaurantes relevantes.</li>
+        <li>Mejorar nuestros servicios y analizar tendencias de uso.</li>
+      </ul>
+      <h2>3. Protección de tus datos</h2>
+      <p>Implementamos medidas de seguridad técnicas y organizativas para proteger tu información contra accesos no autorizados, pérdida o alteración.</p>
+      <h2>4. Compartir información</h2>
+      <p>No vendemos ni alquilamos tus datos personales a terceros. Podemos compartir información agregada y anónima con socios comerciales para fines analíticos.</p>
+      <h2>5. Tus derechos</h2>
+      <p>Tienes derecho a acceder, corregir o eliminar tus datos personales en cualquier momento. Puedes contactarnos directamente para ejercer estos derechos.</p>
+      <h2>6. Contacto</h2>
+      <p>Si tienes preguntas sobre esta política, contáctanos en: <strong>privacidad@sazonhabana.com</strong></p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-brand-text text-white py-12 border-t border-brand-border/20 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-8 border-b border-white/10">
+        <div class="space-y-4 text-center md:text-left">
+          <div class="flex items-center gap-2 justify-center md:justify-start">
+            <div class="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-base font-serif">SH</div>
+            <span class="text-lg font-serif font-bold tracking-wide">Sazón Habana</span>
+          </div>
+          <p class="text-sm text-white/70 max-w-sm mx-auto md:mx-0">Descubre y vive el sabor de Cuba. Restaurantes auténticos en La Habana.</p>
+        </div>
+        <div class="space-y-4 text-center md:text-left">
+          <h4 class="text-sm font-semibold uppercase tracking-wider text-brand-primary inline-block md:inline-block">Explorar</h4>
+          <ul class="space-y-2 text-sm text-white/70">
+            <li><a href="index.html" class="hover:text-white">Inicio</a></li>
+            <li><a href="espacios.html" class="hover:text-white">Espacios</a></li>
+            <li><a href="mapa.html" class="hover:text-white">Mapa</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pt-8 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
+        <p class="text-white/70 text-center md:text-left">© 2026 Sazón Habana. Todos los derechos reservados.</p>
+        <div class="flex gap-6 flex-wrap justify-center">
+          <a href="privacidad.html" class="text-white/70 hover:text-white transition-colors">Política de privacidad</a>
+          <a href="terminos.html" class="text-white/70 hover:text-white transition-colors">Términos de servicio</a>
+          <a href="cookies.html" class="text-white/70 hover:text-white transition-colors">Política de cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="backend/data.js"></script>
+  <script src="frontend/scripts/main.js"></script>
+
+  <script>
+    window.onload = function() {
+      loadSavedTheme();
+    };
+  </script>
+</body>
+</html>
