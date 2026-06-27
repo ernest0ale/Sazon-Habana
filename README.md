@@ -1,4 +1,4 @@
-# Sazón Habana - Sabor y Tradición de CUba
+# Sazón Habana - Sabor y Tradición de Cuba
 
 > Una plataforma web para descubrir, explorar y conocer los mejores espacios gastronómicos de La Habana, Cuba.
 
