@@ -362,17 +362,44 @@ function renderRestauranteDetalle(id) {
     let mapDiv = document.getElementById('detalle-mapa');
     if(mapDiv && r.lat && r.lng) {
       if(window.detailMap) window.detailMap.remove();
-      let isDark = document.documentElement.classList.contains('dark');
-      let tileUrl = isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+      
+      // 🔥 SIEMPRE usar el tile claro (el filtro CSS se encarga del modo oscuro)
+      let tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+      
       window.detailMap = L.map(mapDiv).setView([r.lat, r.lng], 16);
-      L.tileLayer(tileUrl, { attribution: '&copy; Carto' }).addTo(window.detailMap);
-      let blueIcon = L.divIcon({ html: `<div class="w-8 h-8 rounded-full flex items-center justify-center shadow-lg" style="background-color: #3498DB; border: 2px solid white;"><i class="fa-solid fa-utensils text-white text-xs"></i></div>`, iconSize: [32,32], iconAnchor: [16,32] });
-      L.marker([r.lat, r.lng], { icon: blueIcon }).addTo(window.detailMap).bindPopup(`<b>${escapeHtml(r.direccion)}</b>`).openPopup();
+      L.tileLayer(tileUrl, { 
+        attribution: '&copy; <a href="https://www.cartodb.com/">CartoDB</a> | &copy; <a href="https://www.openstreetmap.org/">OSM</a>',
+        maxZoom: 19,
+        minZoom: 8,
+        updateWhenIdle: false,
+        updateWhenZooming: true,
+        keepBuffer: 4
+      }).addTo(window.detailMap);
+      
+      let blueIcon = L.divIcon({ 
+        html: `<div class="w-8 h-8 rounded-full flex items-center justify-center shadow-lg" style="background-color: #3498DB; border: 2px solid white;"><i class="fa-solid fa-utensils text-white text-xs"></i></div>`, 
+        iconSize: [32,32], 
+        iconAnchor: [16,32] 
+      });
+      
+      L.marker([r.lat, r.lng], { icon: blueIcon })
+        .addTo(window.detailMap)
+        .bindPopup(`<b>${escapeHtml(r.direccion)}</b>`)
+        .openPopup();
+      
       let centerBtn = document.getElementById('detalle-center-map');
-      if(centerBtn) centerBtn.onclick = () => { if(window.detailMap) window.detailMap.setView([r.lat, r.lng], 16); };
+      if(centerBtn) centerBtn.onclick = () => { 
+        if(window.detailMap) window.detailMap.setView([r.lat, r.lng], 16); 
+      };
+      
       if(window.detailMap.getContainer) {
         window.detailMap.getContainer().style.zIndex = '1';
       }
+      
+      // Forzar actualización del mapa
+      setTimeout(() => {
+        if(window.detailMap) window.detailMap.invalidateSize();
+      }, 100);
     }
   }, 250);
 }

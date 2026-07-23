@@ -1,4 +1,4 @@
-# Sazón Habana - Sabor y Tradición de Cuba
+# Sazón Habana - Sabor y Tradición de CUba
 
 > Una plataforma web para descubrir, explorar y conocer los mejores espacios gastronómicos de La Habana, Cuba.
 
@@ -19,6 +19,16 @@ Esta versión de Sazón Habana está diseñada para ser un **directorio público
 | Tipo | Acceso | Funcionalidades |
 |------|--------|-----------------|
 | 🚶 **Visitante** | Sin registro | Ver todos los restaurantes, buscar, filtrar, ver detalles y cartas, ver mapa, compartir información, obtener indicaciones. |
+
+## 🖥️ Vista previa
+
+| Página de Inicio (Landing) | Listado de Espacios |
+|--------------|-------------------|
+| ![Landing](screenshots/home.png) | ![Listado](screenshots/espacios.png) |
+
+| Vista de Detalle | Mapa Interactivo |
+|-----------------|------------------|
+| ![Detalle](screenshots/detalle.png) | ![Mapa](screenshots/mapa.png) |
 
 ## Tecnologías utilizadas
 

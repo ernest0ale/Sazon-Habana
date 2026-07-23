@@ -6,6 +6,15 @@ let listadoCurrentPage = 1;
 let itemsPerPage = 9;
 let listadoQuery = '';
 
+// ===== FUNCIÓN PARA ACTUALIZAR LOGO SEGÚN TEMA =====
+function updateHeaderLogo() {
+  const isDark = document.documentElement.classList.contains('dark');
+  const logo = document.getElementById('headerLogo');
+  if (logo) {
+    logo.src = isDark ? 'resources/sazonHabana_darkLogo.png' : 'resources/sazonHabana_lightLogo.png';
+  }
+}
+
 // ===== CREAR TARJETA DE RESTAURANTE =====
 function createRestaurantCard(rest) {
   const isOpen = isRestaurantOpen(rest);
@@ -441,6 +450,8 @@ function toggleDarkMode() {
   localStorage.setItem('sh_dark_mode', isDark);
   let icon = document.getElementById('theme-icon');
   if(icon) icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+  // Actualizar logo
+  updateHeaderLogo();
 }
 
 function loadSavedTheme() {
@@ -449,4 +460,6 @@ function loadSavedTheme() {
     const icon = document.getElementById('theme-icon');
     if(icon) icon.className = 'fa-solid fa-sun';
   }
+  // Actualizar logo al cargar
+  updateHeaderLogo();
 }
