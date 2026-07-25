@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Mapa - Sazón Habana</title>
-  
+  <link rel="shortcut icon" href="resources/sazonHabana_lightLogo.png" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,29 +14,7 @@
   
   <link rel="stylesheet" href="frontend/css/styles.css">
   <link rel="stylesheet" href="frontend/css/mapa.css">
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            'brand-bg': 'var(--brand-bg)',
-            'brand-text': 'var(--brand-text)',
-            'brand-primary': 'var(--brand-primary)',
-            'brand-secondary': '#5B8A72',
-            'brand-border': 'var(--brand-border)',
-            'brand-card': 'var(--brand-card)',
-            'brand-hover': 'var(--brand-hover)',
-          },
-          fontFamily: {
-            serif: ['"Playfair Display"', 'serif'],
-            sans: ['Inter', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
+  <script src="frontend/scripts/tailwind.config.js"></script>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
 
@@ -67,11 +45,11 @@
           <i class="fa-solid fa-bars text-2xl"></i>
         </button>
 
-        <a href="index.html" class="flex items-center gap-2 group mobile-header-logo md:mx-0 mx-auto">
-          <div class="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-serif">SH</div>
+        <a href="index.html" class="flex items-center gap-3 group mobile-header-logo md:mx-0 mx-auto">
+          <img id="headerLogo" src="resources/sazonHabana_lightLogo.png" alt="Sazón Habana" class="h-12 w-auto transition-all duration-300">
           <div class="flex flex-col">
             <span class="text-xl md:text-2xl font-serif font-bold text-brand-text tracking-wide transition-colors group-hover:text-brand-primary leading-none">Sazón Habana</span>
-            <span class="text-[10px] uppercase tracking-widest text-brand-secondary font-bold mt-0.5 hidden md:block">Gastronomía Cubana</span>
+            <span class="text-[10px] uppercase tracking-widest text-brand-secondary font-bold mt-0.5 hidden md:block">Sabor auténtico y cubanía</span>
           </div>
         </a>
       </div>
@@ -156,8 +134,23 @@
       initDatabase();
       loadSavedTheme();
       renderAuthNavs();
+      updateHeaderLogo();
       updateMunicipioFilters();
       setTimeout(initMapGeneral, 300);
+    };
+
+    function updateHeaderLogo() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const logo = document.getElementById('headerLogo');
+      if (logo) {
+        logo.src = isDark ? 'resources/sazonHabana_darkLogo.png' : 'resources/sazonHabana_lightLogo.png';
+      }
+    }
+
+    const originalToggleDarkMode = toggleDarkMode;
+    toggleDarkMode = function() {
+      originalToggleDarkMode();
+      updateHeaderLogo();
     };
   </script>
 </body>

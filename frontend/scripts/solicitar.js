@@ -7,6 +7,19 @@ let wizardLeafletMap = null;
 let wizardMarker = null;
 let simulatedUploadedFileName = "";
 
+// Mapeo de días en español a abreviaturas
+const DIAS_SEMANA_MAP = {
+  'Lunes': 'LUN',
+  'Martes': 'MAR',
+  'Miércoles': 'MIE',
+  'Jueves': 'JUE',
+  'Viernes': 'VIE',
+  'Sábado': 'SAB',
+  'Domingo': 'DOM'
+};
+
+const DIAS_ORDEN = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
 function initSolicitudWizard() { 
   currentWizardStep = 1; 
   simulatedUploadedFileName = ""; 
@@ -63,15 +76,219 @@ function showWizardStep(step) {
   if(step===2) setTimeout(initWizardMap, 300); 
 }
 
+// ===== FUNCIONES PARA HORARIOS =====
+
+function validarFormatoHora(horaStr) {
+  if (!horaStr) return false;
+  horaStr = horaStr.trim();
+  
+  const regex12h = /^(\d{1,2})\s*[:.]?\s*(\d{2})?\s*(AM|PM|am|pm|a\.m\.|p\.m\.)?$/i;
+  const regex24h = /^(\d{1,2})\s*[:.]?\s*(\d{2})?$/;
+  
+  let match12 = horaStr.match(regex12h);
+  let match24 = horaStr.match(regex24h);
+  
+  if (match12) {
+    let horas = parseInt(match12[1]);
+    let minutos = match12[2] ? parseInt(match12[2]) : 0;
+    if (horas < 1 || horas > 12) return false;
+    if (minutos < 0 || minutos > 59) return false;
+    return true;
+  }
+  
+  if (match24) {
+    let horas = parseInt(match24[1]);
+    let minutos = match24[2] ? parseInt(match24[2]) : 0;
+    if (horas < 0 || horas > 23) return false;
+    if (minutos < 0 || minutos > 59) return false;
+    return true;
+  }
+  
+  return false;
+}
+
+function normalizarHora(horaStr) {
+  if (!horaStr) return '';
+  horaStr = horaStr.trim();
+  
+  const regex12h = /^(\d{1,2})\s*[:.]?\s*(\d{2})?\s*(AM|PM|am|pm|a\.m\.|p\.m\.)?$/i;
+  const regex24h = /^(\d{1,2})\s*[:.]?\s*(\d{2})?$/;
+  
+  let match12 = horaStr.match(regex12h);
+  let match24 = horaStr.match(regex24h);
+  
+  if (match12) {
+    let horas = parseInt(match12[1]);
+    let minutos = match12[2] ? parseInt(match12[2]) : 0;
+    let meridiem = match12[3] ? match12[3].toUpperCase() : '';
+    if (!meridiem) meridiem = 'AM';
+    return `${horas}:${String(minutos).padStart(2, '0')} ${meridiem}`;
+  }
+  
+  if (match24) {
+    let horas = parseInt(match24[1]);
+    let minutos = match24[2] ? parseInt(match24[2]) : 0;
+    let meridiem = horas >= 12 ? 'PM' : 'AM';
+    let hora12 = horas % 12;
+    if (hora12 === 0) hora12 = 12;
+    return `${hora12}:${String(minutos).padStart(2, '0')} ${meridiem}`;
+  }
+  
+  return horaStr;
+}
+
+// ===== FUNCIÓN PARA OBTENER HORARIOS DE LOS RANGOS =====
+function obtenerHorariosPorDia() {
+  const horarios = {};
+  const diasInicializados = {};
+  
+  // Inicializar todos los días
+  DIAS_ORDEN.forEach(function(dia) {
+    horarios[dia] = null;
+    diasInicializados[dia] = false;
+  });
+  
+  // Recorrer todos los rangos
+  const rangos = document.querySelectorAll('.horario-rango');
+  rangos.forEach(function(rango) {
+    const diaDesde = rango.querySelector('.dia-desde').value;
+    const diaHasta = rango.querySelector('.dia-hasta').value;
+    const horaInicio = rango.querySelector('.hora-inicio').value;
+    const horaFin = rango.querySelector('.hora-fin').value;
+    const cerrado = rango.querySelector('.cerrado-checkbox').checked;
+    
+    const idxDesde = DIAS_ORDEN.indexOf(diaDesde);
+    const idxHasta = DIAS_ORDEN.indexOf(diaHasta);
+    
+    // Si es cerrado, marcar todos los días del rango como cerrados
+    if (cerrado) {
+      for (let i = idxDesde; i <= idxHasta; i++) {
+        horarios[DIAS_ORDEN[i]] = 'Cerrado';
+        diasInicializados[DIAS_ORDEN[i]] = true;
+      }
+      return;
+    }
+    
+    // Si no es cerrado, aplicar el horario a todos los días del rango
+    const horaInicioNormalizada = normalizarHora(horaInicio);
+    const horaFinNormalizada = normalizarHora(horaFin);
+    const horarioStr = `${horaInicioNormalizada} - ${horaFinNormalizada}`;
+    
+    for (let i = idxDesde; i <= idxHasta; i++) {
+      horarios[DIAS_ORDEN[i]] = horarioStr;
+      diasInicializados[DIAS_ORDEN[i]] = true;
+    }
+  });
+  
+  // Los días no inicializados se consideran cerrados
+  DIAS_ORDEN.forEach(function(dia) {
+    if (!diasInicializados[dia]) {
+      horarios[dia] = 'Cerrado';
+    }
+  });
+  
+  return horarios;
+}
+
+// ===== FUNCIÓN PARA GENERAR TEXTO DE HORARIO LEGIBLE =====
+function generarTextoHorario(horarios) {
+  if (!horarios) return '';
+  
+  const partes = [];
+  
+  // Agrupar días con el mismo horario
+  const grupos = {};
+  DIAS_ORDEN.forEach(function(dia) {
+    const horario = horarios[dia] || '';
+    if (!grupos[horario]) grupos[horario] = [];
+    grupos[horario].push(dia);
+  });
+  
+  // Generar texto para cada grupo
+  for (const [horario, diasList] of Object.entries(grupos)) {
+    if (diasList.length === 1) {
+      partes.push(`${diasList[0]}: ${horario}`);
+    } else if (diasList.length === 7) {
+      partes.push(`Todos los días: ${horario}`);
+    } else {
+      // Verificar si son días consecutivos
+      const indices = diasList.map(function(d) { return DIAS_ORDEN.indexOf(d); }).sort(function(a,b){return a-b;});
+      let esConsecutivo = true;
+      for (let i = 1; i < indices.length; i++) {
+        if (indices[i] !== indices[i-1] + 1) {
+          esConsecutivo = false;
+          break;
+        }
+      }
+      if (esConsecutivo && indices.length > 2) {
+        partes.push(`${diasList[0]} - ${diasList[diasList.length-1]}: ${horario}`);
+      } else {
+        partes.push(`${diasList.join(', ')}: ${horario}`);
+      }
+    }
+  }
+  
+  return partes.join(' | ');
+}
+
+// ===== FUNCIÓN PARA VALIDAR QUE NO HAYA SOLAPAMIENTO DE DÍAS =====
+function validarSolapamientoDias() {
+  const rangos = document.querySelectorAll('.horario-rango');
+  const diasCubiertos = new Set();
+  
+  for (const rango of rangos) {
+    const diaDesde = rango.querySelector('.dia-desde').value;
+    const diaHasta = rango.querySelector('.dia-hasta').value;
+    const idxDesde = DIAS_ORDEN.indexOf(diaDesde);
+    const idxHasta = DIAS_ORDEN.indexOf(diaHasta);
+    
+    for (let i = idxDesde; i <= idxHasta; i++) {
+      const dia = DIAS_ORDEN[i];
+      if (diasCubiertos.has(dia)) {
+        return false; // Solapamiento detectado
+      }
+      diasCubiertos.add(dia);
+    }
+  }
+  
+  return true;
+}
+
 function nextWizardStep() { 
   if(currentWizardStep===1) { 
     let n=document.getElementById('wiz-nombre')?.value.trim(); 
     let t=document.getElementById('wiz-tipo')?.value; 
     let p=document.getElementById('wiz-precio')?.value; 
-    let h=document.getElementById('wiz-horario')?.value.trim(); 
     let tel=document.getElementById('wiz-telefono')?.value.trim(); 
     let d=document.getElementById('wiz-descripcion')?.value.trim(); 
-    if(!n||!t||!p||!h||!tel||!d) { showToast("Faltan Datos", "Completa todos los campos requeridos.", "error"); return; } 
+    
+    if(!n||!t||!p||!tel||!d) { 
+      showToast("Faltan Datos", "Completa todos los campos requeridos.", "error"); 
+      return; 
+    }
+    
+    if(!/^\d{8}$/.test(tel)) {
+      showToast("Teléfono inválido", "Debe tener 8 dígitos numéricos.", "error");
+      return;
+    }
+    
+    // Validar solapamiento de días
+    if (!validarSolapamientoDias()) {
+      showToast("Solapamiento de días", "Los rangos de días no deben solaparse entre sí.", "error");
+      return;
+    }
+    
+    // Validar que todos los días tengan horario
+    const horarios = obtenerHorariosPorDia();
+    let todosCubiertos = true;
+    DIAS_ORDEN.forEach(function(dia) {
+      if (!horarios[dia]) todosCubiertos = false;
+    });
+    
+    if (!todosCubiertos) {
+      showToast("Horario incompleto", "Todos los días deben tener un horario definido.", "error");
+      return;
+    }
   } 
   if(currentWizardStep===2) { 
     let z=document.getElementById('wiz-municipio')?.value; 
@@ -140,6 +357,10 @@ function handleWizardSubmit(e) {
     return; 
   } 
   
+  // Obtener horarios
+  const horarios = obtenerHorariosPorDia();
+  const horarioTexto = generarTextoHorario(horarios);
+  
   let user = getUsuarioActual(); 
   let nombreGestor = user ? user.nombre : "Solicitante"; 
   let emailGestor = user ? user.email : "solicitante@ejemplo.com"; 
@@ -149,7 +370,7 @@ function handleWizardSubmit(e) {
     nombre: document.getElementById('wiz-nombre')?.value || '', 
     tipo: document.getElementById('wiz-tipo')?.value || '', 
     precio: document.getElementById('wiz-precio')?.value || '', 
-    horario: document.getElementById('wiz-horario')?.value || '', 
+    horario: horarioTexto,
     telefono: document.getElementById('wiz-telefono')?.value || '', 
     descripcion: document.getElementById('wiz-descripcion')?.value || '', 
     img: document.getElementById('wiz-img')?.value || "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=800", 
@@ -163,7 +384,8 @@ function handleWizardSubmit(e) {
     fileLegal: simulatedUploadedFileName || "documento.pdf", 
     nombreGestor, 
     emailGestor, 
-    passwordGestor 
+    passwordGestor,
+    horariosPorDia: horarios
   }; 
   
   agregarSolicitud(nueva); 

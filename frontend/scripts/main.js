@@ -7,6 +7,11 @@ let listadoCurrentPage = 1;
 let itemsPerPage = 9;
 let listadoQuery = '';
 
+// ===== VARIABLES PARA NAVEGACIÓN DEL BUSCADOR =====
+let searchSuggestions = [];
+let selectedSuggestionIndex = -1;
+let isSearchOverlayOpen = false;
+
 // ===== NAVEGACIÓN (para SPA) =====
 function navigate(pageId, param = null) {
   if (pageId === 'detalle' && param) {
@@ -86,8 +91,7 @@ function renderHomeCarruseles() {
 
   const nuevos = rest.filter(r => {
     const createdAt = new Date(r.createdAt);
-    const resenas = getResenasByRestauranteId(r.id);
-    return resenas.length === 0 && createdAt >= oneMonthAgo;
+    return createdAt >= oneMonthAgo;
   });
 
   const populares = [...rest].sort((a,b) => {
@@ -325,19 +329,39 @@ function resetAllFilters() {
   applyFiltersAndRender();
 }
 
-// ===== BÚSQUEDA EN OVERLAY (CORREGIDO) =====
+// ===== FUNCIONES PARA CONTROLAR EL SCROLL DEL BODY =====
+function disableBodyScroll() {
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
+}
+
+function enableBodyScroll() {
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
+}
+
+// ===== BÚSQUEDA CON NAVEGACIÓN COMPLETA POR TECLADO =====
 function openSearchOverlay() { 
   const overlay = document.getElementById('search-overlay');
   if (overlay) {
     overlay.classList.add('active'); 
     overlay.style.display = 'flex';
+    isSearchOverlayOpen = true;
+    disableBodyScroll();
+    
     const input = document.getElementById('search-overlay-input');
     if (input) {
-      input.focus(); 
+      setTimeout(function() {
+        input.focus();
+      }, 50);
       input.value = '';
     }
     const suggestions = document.getElementById('search-suggestions');
-    if (suggestions) suggestions.innerHTML = ''; 
+    if (suggestions) suggestions.innerHTML = '';
+    selectedSuggestionIndex = -1;
+    searchSuggestions = [];
   }
 }
 
@@ -346,9 +370,13 @@ function closeSearchOverlay() {
   if (overlay) {
     overlay.classList.remove('active'); 
     overlay.style.display = 'none';
+    isSearchOverlayOpen = false;
+    enableBodyScroll();
   }
   const suggestions = document.getElementById('search-suggestions');
-  if (suggestions) suggestions.innerHTML = ''; 
+  if (suggestions) suggestions.innerHTML = '';
+  selectedSuggestionIndex = -1;
+  searchSuggestions = [];
 }
 
 function executeSearch() {
@@ -360,11 +388,96 @@ function executeSearch() {
   }
 }
 
+// ===== NAVEGACIÓN CON TECLAS (Flechas + Tab) =====
+function handleSearchKeydown(e) {
+  const key = e.key;
+  
+  if (key === 'ArrowDown') {
+    e.preventDefault();
+    if (searchSuggestions.length === 0) return;
+    
+    if (selectedSuggestionIndex === -1) {
+      selectedSuggestionIndex = 0;
+    } else {
+      if (selectedSuggestionIndex >= searchSuggestions.length - 1) {
+        selectedSuggestionIndex = 0;
+      } else {
+        selectedSuggestionIndex++;
+      }
+    }
+    updateSelectedSuggestion();
+    return;
+  }
+  
+  if (key === 'ArrowUp') {
+    e.preventDefault();
+    if (searchSuggestions.length === 0) return;
+    
+    if (selectedSuggestionIndex === -1) {
+      selectedSuggestionIndex = searchSuggestions.length - 1;
+    } else if (selectedSuggestionIndex === 0) {
+      selectedSuggestionIndex = searchSuggestions.length - 1;
+    } else {
+      selectedSuggestionIndex--;
+    }
+    updateSelectedSuggestion();
+    return;
+  }
+  
+  if (key === 'Enter') {
+    e.preventDefault();
+    if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < searchSuggestions.length) {
+      const selected = searchSuggestions[selectedSuggestionIndex];
+      closeSearchOverlay();
+      window.location.href = `detalles.html?id=${selected.id}`;
+    } else {
+      executeSearch();
+    }
+    return;
+  }
+  
+  if (key === 'Escape') {
+    e.preventDefault();
+    closeSearchOverlay();
+    return;
+  }
+}
+
+// ===== ACTUALIZAR SUGERENCIA SELECCIONADA =====
+function updateSelectedSuggestion() {
+  const items = document.querySelectorAll('.suggestion-item');
+  items.forEach((item, index) => {
+    if (index === selectedSuggestionIndex) {
+      item.classList.add('selected');
+      item.setAttribute('aria-selected', 'true');
+      item.scrollIntoView({ block: 'nearest' });
+      if (document.activeElement !== item) {
+        item.focus();
+      }
+    } else {
+      item.classList.remove('selected');
+      item.setAttribute('aria-selected', 'false');
+    }
+  });
+  
+  if (selectedSuggestionIndex === -1) {
+    const input = document.getElementById('search-overlay-input');
+    if (input && document.activeElement !== input) {
+      input.focus();
+    }
+  }
+}
+
+// ===== GENERAR SUGERENCIAS =====
 function handleSearchSuggestions() {
   const query = document.getElementById('search-overlay-input')?.value.trim();
   const container = document.getElementById('search-suggestions');
   if (!container) return;
   container.innerHTML = '';
+  
+  selectedSuggestionIndex = -1;
+  searchSuggestions = [];
+  
   if (!query || query.length < 1) return;
 
   const rest = getRestaurantes();
@@ -383,50 +496,153 @@ function handleSearchSuggestions() {
     return false;
   }).slice(0, 6);
 
+  searchSuggestions = results;
+
   if (results.length === 0) {
     container.innerHTML = `<div style="padding:0.8rem 0.8rem;color:var(--brand-text);opacity:0.5;font-size:0.85rem;text-align:center;">No se encontraron resultados</div>`;
     return;
   }
 
-  results.forEach(r => {
+  results.forEach((r, index) => {
     const item = document.createElement('div');
     item.className = 'suggestion-item';
+    item.setAttribute('tabindex', '0');
+    item.setAttribute('role', 'option');
+    item.setAttribute('aria-selected', 'false');
+    item.dataset.index = index;
+    
     const tipoIcon = getTipoIcon(r.tipo);
     item.innerHTML = `
-      <div class="sug-icon"><i class="fa-solid ${tipoIcon.icon}"></i></div>
       <div class="sug-info">
         <div class="sug-name">${r.nombre}</div>
-        <div class="sug-desc">${r.tipo} · ${r.municipio}</div>
+        <div class="sug-desc">${r.tipo.charAt(0).toUpperCase() + r.tipo.slice(1)} · ${r.municipio}</div>
       </div>
-      <span class="sug-badge">${r.tipo}</span>
     `;
-    item.onclick = () => {
-      listadoQuery = r.nombre;
+    
+    item.onclick = function(e) {
+      e.stopPropagation();
       closeSearchOverlay();
-      window.location.href = `espacios.html?q=${encodeURIComponent(r.nombre)}`;
+      window.location.href = `detalles.html?id=${r.id}`;
     };
+    
+    item.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        closeSearchOverlay();
+        window.location.href = `detalles.html?id=${r.id}`;
+      }
+    });
+    
+    item.addEventListener('focus', function() {
+      selectedSuggestionIndex = parseInt(this.dataset.index);
+      updateSelectedSuggestion();
+    });
+    
     container.appendChild(item);
   });
 
   if (results.length > 0) {
     const seeAll = document.createElement('div');
-    seeAll.className = 'suggestion-item';
+    seeAll.className = 'suggestion-item see-all';
+    seeAll.setAttribute('tabindex', '0');
+    seeAll.setAttribute('role', 'button');
     seeAll.style.borderTop = '1px solid var(--brand-border)';
     seeAll.style.marginTop = '4px';
     seeAll.style.paddingTop = '10px';
+    seeAll.style.cursor = 'pointer';
     seeAll.innerHTML = `
       <div style="flex:1;font-weight:600;color:var(--brand-primary);font-size:0.85rem;text-align:center;">
         Ver todos los resultados para "<span style="font-weight:700;">${query}</span>"
       </div>
     `;
-    seeAll.onclick = () => {
+    seeAll.onclick = function(e) {
+      e.stopPropagation();
       listadoQuery = query;
       closeSearchOverlay();
       window.location.href = `espacios.html?q=${encodeURIComponent(query)}`;
     };
+    seeAll.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        this.click();
+      }
+    });
     container.appendChild(seeAll);
   }
 }
+
+// ===== GESTIONAR EL CICLO DE TAB DENTRO DEL OVERLAY =====
+function handleSearchOverlayTab(e) {
+  const overlay = document.getElementById('search-overlay');
+  if (!overlay || overlay.style.display !== 'flex') return;
+  
+  const focusableElements = overlay.querySelectorAll(
+    'input, button, .suggestion-item[tabindex="0"], .see-all[tabindex="0"]'
+  );
+  
+  if (focusableElements.length === 0) return;
+  
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+  
+  if (e.shiftKey && document.activeElement === firstElement) {
+    e.preventDefault();
+    lastElement.focus();
+    return;
+  }
+  
+  if (!e.shiftKey && document.activeElement === lastElement) {
+    e.preventDefault();
+    firstElement.focus();
+    return;
+  }
+}
+
+// ===== EVENTO GLOBAL PARA CAPTURAR TECLAS CUANDO EL OVERLAY ESTÁ ABIERTO =====
+document.addEventListener('keydown', function(e) {
+  if (isSearchOverlayOpen) {
+    // Prevenir scroll con flechas y redirigir al handler
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'PageUp' || e.key === 'PageDown' || e.key === 'Home' || e.key === 'End') {
+      e.preventDefault();
+      handleSearchKeydown(e);
+      return;
+    }
+    
+    if (e.key === 'Enter') {
+      const overlay = document.getElementById('search-overlay');
+      if (overlay && overlay.contains(document.activeElement)) {
+        handleSearchKeydown(e);
+        return;
+      }
+    }
+    
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeSearchOverlay();
+      return;
+    }
+  }
+  
+  if (e.key === 'Tab') {
+    handleSearchOverlayTab(e);
+  }
+});
+
+// ===== FUNCIÓN PARA CERRAR OVERLAY CON CLICK FUERA =====
+document.addEventListener('click', function(e) {
+  const overlay = document.getElementById('search-overlay');
+  if (overlay && overlay.style.display === 'flex') {
+    const searchBtn = e.target.closest('[onclick*="openSearchOverlay"]') || 
+                      e.target.closest('.fa-magnifying-glass')?.parentElement;
+    if (searchBtn) return;
+    
+    if (!e.target.closest('.search-overlay-container')) {
+      closeSearchOverlay();
+    }
+  }
+});
 
 // ===== BÚSQUEDA EN HERO =====
 function handleHeroSearch(e) {
@@ -553,7 +769,6 @@ function renderAuthNavs() {
   let container = document.getElementById('auth-buttons-container');
   let mobileContainer = document.getElementById('auth-buttons-container-mobile');
   
-  // Elementos de navegación
   let solicitarNav = document.getElementById('nav-solicitar');
   let mobileSolicitarNav = document.getElementById('mobile-nav-solicitar');
   let miEspacioNav = document.getElementById('nav-mi-espacio');
@@ -561,12 +776,10 @@ function renderAuthNavs() {
   let adminNav = document.getElementById('nav-admin');
   let mobileAdminNav = document.getElementById('mobile-nav-admin');
   
-  // Elementos del footer
   let footerSolicitar = document.getElementById('footer-solicitar-link');
   let footerMiEspacio = document.getElementById('footer-mi-espacio-link');
   let footerAdmin = document.getElementById('footer-admin-link');
 
-  // Mostrar/ocultar Admin Panel (siempre visible para admin)
   if(user && user.rol === 'admin') {
     if (adminNav) adminNav.classList.remove('hidden');
     if (mobileAdminNav) mobileAdminNav.classList.remove('hidden');
@@ -578,7 +791,6 @@ function renderAuthNavs() {
   }
 
   if(user) {
-    // Avatar del usuario
     if (container) {
       container.innerHTML = `
         <div class="avatar-dropdown">
@@ -599,9 +811,7 @@ function renderAuthNavs() {
     }
     if (mobileContainer) mobileContainer.innerHTML = '';
 
-    // Lógica para mostrar/ocultar según rol
     if(user.rol === 'gestor' && user.restauranteId) {
-      // Gestor: ocultar "Solicitar espacio", mostrar "Mi espacio"
       if (solicitarNav) solicitarNav.classList.add('hidden');
       if (mobileSolicitarNav) mobileSolicitarNav.classList.add('hidden');
       if (footerSolicitar) footerSolicitar.classList.add('hidden');
@@ -610,9 +820,7 @@ function renderAuthNavs() {
       if (mobileMiEspacioNav) mobileMiEspacioNav.classList.remove('hidden');
       if (footerMiEspacio) footerMiEspacio.classList.remove('hidden');
       
-      // Admin ya está oculto por la lógica anterior (si no es admin)
     } else if(user.rol === 'admin') {
-      // Admin: mostrar "Solicitar espacio", ocultar "Mi espacio"
       if (solicitarNav) solicitarNav.classList.remove('hidden');
       if (mobileSolicitarNav) mobileSolicitarNav.classList.remove('hidden');
       if (footerSolicitar) footerSolicitar.classList.remove('hidden');
@@ -621,9 +829,7 @@ function renderAuthNavs() {
       if (mobileMiEspacioNav) mobileMiEspacioNav.classList.add('hidden');
       if (footerMiEspacio) footerMiEspacio.classList.add('hidden');
       
-      // Admin ya está visible por la lógica anterior
     } else {
-      // Usuario normal: mostrar "Solicitar espacio", ocultar "Mi espacio"
       if (solicitarNav) solicitarNav.classList.remove('hidden');
       if (mobileSolicitarNav) mobileSolicitarNav.classList.remove('hidden');
       if (footerSolicitar) footerSolicitar.classList.remove('hidden');
@@ -633,7 +839,6 @@ function renderAuthNavs() {
       if (footerMiEspacio) footerMiEspacio.classList.add('hidden');
     }
   } else {
-    // Usuario NO logueado
     if (solicitarNav) solicitarNav.classList.add('hidden');
     if (mobileSolicitarNav) mobileSolicitarNav.classList.add('hidden');
     if (footerSolicitar) footerSolicitar.classList.add('hidden');
@@ -646,7 +851,6 @@ function renderAuthNavs() {
     if (mobileAdminNav) mobileAdminNav.classList.add('hidden');
     if (footerAdmin) footerAdmin.classList.add('hidden');
 
-    // Botón de "Iniciar Sesión"
     if (container) {
       container.innerHTML = `
         <a href="login.html" class="bg-transparent border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white font-bold text-sm px-5 py-2 rounded-full transition-all">
@@ -657,7 +861,6 @@ function renderAuthNavs() {
     if (mobileContainer) mobileContainer.innerHTML = '';
   }
   
-  // Cerrar dropdown
   const dropdown = document.getElementById('avatar-dropdown-menu');
   if (dropdown) dropdown.classList.remove('show');
 }

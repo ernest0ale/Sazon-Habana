@@ -63,17 +63,20 @@ function openChangePasswordModal() {
 function closeChangePasswordModal() { 
   document.getElementById('modal-change-password').classList.add('hidden'); 
   document.getElementById('m-old-pass').value = ''; 
-  document.getElementById('m-new-pass').value = ''; 
+  document.getElementById('m-new-pass').value = '';
+  document.getElementById('m-confirm-pass').value = '';
 }
 
 function submitChangePassword() { 
   let user = getUsuarioActual(); 
   if (!user) return;
   let oldP = document.getElementById('m-old-pass').value; 
-  let newP = document.getElementById('m-new-pass').value; 
+  let newP = document.getElementById('m-new-pass').value;
+  let confirmP = document.getElementById('m-confirm-pass').value;
   
   if(oldP !== user.password) { showToast("Error", "Contraseña actual incorrecta.", "error"); return; } 
-  if(newP.length<4) { showToast("Error", "Mínimo 4 caracteres.", "error"); return; } 
+  if(newP.length<4) { showToast("Error", "Mínimo 4 caracteres.", "error"); return; }
+  if(newP !== confirmP) { showToast("Error", "Las contraseñas no coinciden.", "error"); return; }
   
   let usuarios = JSON.parse(localStorage.getItem("sh_usuarios")); 
   let idx = usuarios.findIndex(u => u.id === user.id); 

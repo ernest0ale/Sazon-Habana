@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Iniciar Sesión - Sazón Habana</title>
-  
+  <link rel="shortcut icon" href="resources/sazonHabana_lightLogo.png" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,29 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <link rel="stylesheet" href="frontend/css/styles.css">
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            'brand-bg': 'var(--brand-bg)',
-            'brand-text': 'var(--brand-text)',
-            'brand-primary': 'var(--brand-primary)',
-            'brand-secondary': '#5B8A72',
-            'brand-border': 'var(--brand-border)',
-            'brand-card': 'var(--brand-card)',
-            'brand-hover': 'var(--brand-hover)',
-          },
-          fontFamily: {
-            serif: ['"Playfair Display"', 'serif'],
-            sans: ['Inter', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
+  <script src="frontend/scripts/tailwind.config.js"></script>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
 
@@ -65,11 +43,11 @@
           <i class="fa-solid fa-bars text-2xl"></i>
         </button>
 
-        <a href="index.html" class="flex items-center gap-2 group mobile-header-logo md:mx-0 mx-auto">
-          <div class="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-serif">SH</div>
+        <a href="index.html" class="flex items-center gap-3 group mobile-header-logo md:mx-0 mx-auto">
+          <img id="headerLogo" src="resources/sazonHabana_lightLogo.png" alt="Sazón Habana" class="h-12 w-auto transition-all duration-300">
           <div class="flex flex-col">
             <span class="text-xl md:text-2xl font-serif font-bold text-brand-text tracking-wide transition-colors group-hover:text-brand-primary leading-none">Sazón Habana</span>
-            <span class="text-[10px] uppercase tracking-widest text-brand-secondary font-bold mt-0.5 hidden md:block">Gastronomía Cubana</span>
+            <span class="text-[10px] uppercase tracking-widest text-brand-secondary font-bold mt-0.5 hidden md:block">Sabor auténtico y cubanía</span>
           </div>
         </a>
       </div>
@@ -111,7 +89,7 @@
         <form onsubmit="handleLogin(event)" class="space-y-4">
           <div>
             <label class="text-xs font-bold uppercase text-brand-text/60">Correo o Teléfono</label>
-            <input type="text" id="login-id" required placeholder="correo@ejemplo.com o 51234567" class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none">
+            <input type="text" id="login-id" required placeholder="correo@ejemplo.com o 5XXXXXXX" class="w-full bg-brand-bg text-brand-text p-3.5 rounded-xl border border-brand-border outline-none">
           </div>
           <div>
             <div class="flex justify-between">
@@ -141,40 +119,6 @@
     </div>
   </main>
 
-  <!-- FOOTER -->
-  <footer class="bg-brand-text text-white py-12 border-t border-brand-border/20 mt-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-8 border-b border-white/10">
-        <div class="space-y-4 text-center md:text-left">
-          <div class="flex items-center gap-2 justify-center md:justify-start">
-            <div class="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-base font-serif">SH</div>
-            <span class="text-lg font-serif font-bold tracking-wide">Sazón Habana</span>
-          </div>
-          <p class="text-sm text-white/70 max-w-sm mx-auto md:mx-0">Descubre y vive el sabor de Cuba. Restaurantes auténticos en La Habana.</p>
-        </div>
-        <div class="space-y-4 text-center md:text-left">
-          <h4 class="text-sm font-semibold uppercase tracking-wider text-brand-primary inline-block md:inline-block">Explorar</h4>
-          <ul class="space-y-2 text-sm text-white/70">
-            <li><a href="index.html" class="hover:text-white">Inicio</a></li>
-            <li><a href="espacios.html" class="hover:text-white">Espacios</a></li>
-            <li><a href="mapa.html" class="hover:text-white">Mapa</a></li>
-            <li id="footer-solicitar-link"><a href="solicitarEspacio.html" class="hover:text-white">Solicitar espacio</a></li>
-            <li id="footer-mi-espacio-link" class="hidden"><a href="miEspacio.html" class="hover:text-white">Mi espacio</a></li>
-            <li id="footer-admin-link" class="hidden"><a href="admin.html" class="hover:text-white">Admin Panel</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="pt-8 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
-        <p class="text-white/70 text-center md:text-left">© 2026 Sazón Habana. Todos los derechos reservados.</p>
-        <div class="flex gap-6 flex-wrap justify-center">
-          <a href="privacidad.html" class="text-white/70 hover:text-white transition-colors">Política de privacidad</a>
-          <a href="terminos.html" class="text-white/70 hover:text-white transition-colors">Términos de servicio</a>
-          <a href="cookies.html" class="text-white/70 hover:text-white transition-colors">Política de cookies</a>
-        </div>
-      </div>
-    </div>
-  </footer>
-
   <!-- BACKEND -->
   <script src="backend/data.js"></script>
   <script src="backend/auth.js"></script>
@@ -190,11 +134,25 @@
       initDatabase();
       loadSavedTheme();
       renderAuthNavs();
+      updateHeaderLogo();
       
-      // Redirigir si ya está logueado
       if (getUsuarioActual()) {
         window.location.href = 'index.html';
       }
+    };
+
+    function updateHeaderLogo() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const logo = document.getElementById('headerLogo');
+      if (logo) {
+        logo.src = isDark ? 'resources/sazonHabana_darkLogo.png' : 'resources/sazonHabana_lightLogo.png';
+      }
+    }
+
+    const originalToggleDarkMode = toggleDarkMode;
+    toggleDarkMode = function() {
+      originalToggleDarkMode();
+      updateHeaderLogo();
     };
   </script>
 </body>

@@ -2,17 +2,35 @@
    MAPA.CSS - ESTILOS DEL MAPA
    ============================================ */
 
-.dark .leaflet-tile {
-  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
-}
-.dark .leaflet-container { background: #243029; }
-.dark .leaflet-popup-content-wrapper, 
-.dark .leaflet-popup-tip {
-  background: #243029;
-  color: #E8F0E5;
-  border: 1px solid #3A4F3E;
+/* ===== FILTRO PARA TILES EN MODO OSCURO ===== */
+.dark .leaflet-tile,
+.dark-mode .leaflet-tile,
+body.dark .leaflet-tile,
+body.dark-mode .leaflet-tile {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) !important;
 }
 
+.dark .leaflet-container,
+.dark-mode .leaflet-container,
+body.dark .leaflet-container,
+body.dark-mode .leaflet-container {
+  background: #243029 !important;
+}
+
+.dark .leaflet-popup-content-wrapper, 
+.dark .leaflet-popup-tip,
+.dark-mode .leaflet-popup-content-wrapper,
+.dark-mode .leaflet-popup-tip,
+body.dark .leaflet-popup-content-wrapper,
+body.dark .leaflet-popup-tip,
+body.dark-mode .leaflet-popup-content-wrapper,
+body.dark-mode .leaflet-popup-tip {
+  background: #243029 !important;
+  color: #E8F0E5 !important;
+  border: 1px solid #3A4F3E !important;
+}
+
+/* ===== CONTROL DE CENTRADO ===== */
 .leaflet-control-custom-center {
   background: white;
   border-radius: 4px;
@@ -24,18 +42,81 @@
   line-height: 30px;
   margin-right: 8px !important;
   margin-top: 8px !important;
-}
-.dark .leaflet-control-custom-center { 
-  background: #243029; 
-  color: white; 
-  border: 1px solid #3A4F3E; 
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0,0,0,0.1);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #333;
 }
 
+.leaflet-control-custom-center:hover {
+  background: #f0f0f0;
+  transform: scale(1.05);
+}
+
+.dark .leaflet-control-custom-center,
+.dark-mode .leaflet-control-custom-center,
+body.dark .leaflet-control-custom-center,
+body.dark-mode .leaflet-control-custom-center { 
+  background: #243029 !important; 
+  color: white !important; 
+  border: 1px solid #3A4F3E !important; 
+}
+
+.dark .leaflet-control-custom-center i,
+.dark-mode .leaflet-control-custom-center i,
+body.dark .leaflet-control-custom-center i,
+body.dark-mode .leaflet-control-custom-center i {
+  color: white !important;
+}
+
+.dark .leaflet-control-custom-center:hover,
+.dark-mode .leaflet-control-custom-center:hover,
+body.dark .leaflet-control-custom-center:hover,
+body.dark-mode .leaflet-control-custom-center:hover {
+  background: #2d3d32 !important;
+}
+
+/* ===== CONTROL DE ZOOM ===== */
 .leaflet-control-zoom {
   margin-left: 8px !important;
   margin-top: 8px !important;
 }
 
+.leaflet-control-zoom a {
+  background: white !important;
+  color: #333 !important;
+  border: none !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+  font-size: 18px !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #f0f0f0 !important;
+}
+
+.dark .leaflet-control-zoom a,
+.dark-mode .leaflet-control-zoom a,
+body.dark .leaflet-control-zoom a,
+body.dark-mode .leaflet-control-zoom a {
+  background: #243029 !important;
+  color: white !important;
+  border-color: #3A4F3E !important;
+}
+
+.dark .leaflet-control-zoom a:hover,
+.dark-mode .leaflet-control-zoom a:hover,
+body.dark .leaflet-control-zoom a:hover,
+body.dark-mode .leaflet-control-zoom a:hover {
+  background: #2d3d32 !important;
+}
+
+/* ===== BOTÓN CENTRAR EN DETALLE ===== */
 .map-center-btn-detalle {
   position: absolute;
   top: 1rem;
@@ -53,19 +134,44 @@
   align-items: center;
   justify-content: center;
 }
+
 .map-center-btn-detalle:hover {
   transform: scale(1.05);
   background: var(--brand-bg);
 }
+
 .map-center-btn-detalle i {
   font-size: 1.2rem;
   color: var(--brand-primary);
 }
+
+.dark .map-center-btn-detalle,
+.dark-mode .map-center-btn-detalle,
+body.dark .map-center-btn-detalle,
+body.dark-mode .map-center-btn-detalle {
+  background: #243029;
+  border-color: #3A4F3E;
+}
+
+.dark .map-center-btn-detalle i,
+.dark-mode .map-center-btn-detalle i,
+body.dark .map-center-btn-detalle i,
+body.dark-mode .map-center-btn-detalle i {
+  color: #7BA88E;
+}
+
+.dark .map-center-btn-detalle:hover,
+.dark-mode .map-center-btn-detalle:hover,
+body.dark .map-center-btn-detalle:hover,
+body.dark-mode .map-center-btn-detalle:hover {
+  background: #2d3d32;
+}
+
 .mapa-container {
   position: relative;
 }
 
-/* Popup del mapa */
+/* ===== POPUP DEL MAPA ===== */
 .custom-popup-wrapper .leaflet-popup-content-wrapper {
   border-radius: 16px !important;
   padding: 0 !important;
@@ -81,9 +187,13 @@
 .custom-popup-wrapper .leaflet-popup-tip {
   background: var(--brand-card) !important;
 }
-.dark .custom-popup-wrapper .leaflet-popup-tip {
+.dark .custom-popup-wrapper .leaflet-popup-tip,
+.dark-mode .custom-popup-wrapper .leaflet-popup-tip,
+body.dark .custom-popup-wrapper .leaflet-popup-tip,
+body.dark-mode .custom-popup-wrapper .leaflet-popup-tip {
   background: #243029 !important;
 }
+
 .custom-popup-wrapper .leaflet-popup-close-button {
   position: absolute !important;
   top: 8px !important;
@@ -109,6 +219,7 @@
   background: rgba(0, 0, 0, 0.85) !important;
   transform: scale(1.1) !important;
 }
+
 .popup-img {
   width: 100%;
   height: 120px;
@@ -184,11 +295,14 @@
   background: var(--brand-hover);
   transform: scale(1.02);
 }
-.dark .popup-body .popup-category {
-  color: #CCCCCC;
+.dark .popup-body .popup-category,
+.dark-mode .popup-body .popup-category,
+body.dark .popup-body .popup-category,
+body.dark-mode .popup-body .popup-category {
+  color: #CCCCCC !important;
 }
 
-/* Filtros del mapa */
+/* ===== FILTROS DEL MAPA ===== */
 .map-filter-amenities {
   display: flex;
   flex-wrap: wrap;
@@ -212,4 +326,9 @@
   height: 14px;
   border-radius: 4px;
   accent-color: var(--brand-primary);
+}
+
+/* ===== CORRECCIÓN: Asegurar que solo haya un control de zoom ===== */
+.leaflet-control-zoom:nth-of-type(n+2) {
+  display: none !important;
 }

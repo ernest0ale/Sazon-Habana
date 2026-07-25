@@ -171,6 +171,25 @@ footer button:hover {
   color: #FFFFFF !important;
 }
 
+/* ===== FOOTER - ENCABEZADOS CON LÍNEA DEBAJO ===== */
+footer h4 {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 8px;
+  color: #FFFFFF !important;
+}
+
+footer h4::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #FFFFFF;
+  border-radius: 2px;
+}
+
 /* ===== SEARCH OVERLAY ===== */
 .search-overlay {
   position: fixed;
@@ -323,4 +342,84 @@ footer button:hover {
   border-color: var(--brand-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(91, 138, 114, 0.3);
+}
+
+/* ===== CORRECCIÓN: Botón "Iniciar Sesión" en modo oscuro ===== */
+/* Estilo base para el botón de iniciar sesión (modo claro) */
+#auth-buttons-container a.border-2 {
+  border-color: var(--brand-primary) !important;
+  color: var(--brand-primary) !important;
+}
+
+#auth-buttons-container a.border-2:hover {
+  background-color: var(--brand-primary) !important;
+  color: white !important;
+}
+
+/* 🔥 Modo oscuro: el borde y texto del botón "Iniciar Sesión" serán #E8F0E5 */
+.dark #auth-buttons-container a.border-2 {
+  border-color: #E8F0E5 !important;
+  color: #E8F0E5 !important;
+}
+
+.dark #auth-buttons-container a.border-2:hover {
+  background-color: var(--brand-primary) !important;
+  color: #F5F8F2 !important;
+  border-color: var(--brand-primary) !important;
+}
+
+/* Asegurar que los colores de navegación en modo oscuro sean consistentes */
+.dark .nav-btn {
+  color: var(--brand-text) !important;
+}
+
+.dark .nav-btn:hover {
+  color: var(--brand-primary) !important;
+}
+
+.dark .nav-btn.border-brand-primary {
+  border-color: var(--brand-primary) !important;
+}
+
+/* ===== SUGERENCIAS DE BÚSQUEDA - SELECCIÓN POR TECLADO ===== */
+.suggestion-item.selected {
+  background: var(--brand-primary) !important;
+  color: white !important;
+  border-radius: 8px;
+}
+
+.suggestion-item.selected .sug-name,
+.suggestion-item.selected .sug-desc {
+  color: white !important;
+}
+
+.suggestion-item.selected .sug-icon i {
+  color: white !important;
+}
+
+.suggestion-item.selected .sug-badge {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+/* Modo oscuro */
+.dark .suggestion-item.selected {
+  background: var(--brand-primary) !important;
+  color: white !important;
+}
+
+.dark .suggestion-item.selected .sug-name,
+.dark .suggestion-item.selected .sug-desc {
+  color: white !important;
+}
+
+.dark .suggestion-item.selected .sug-icon i {
+  color: white !important;
+}
+
+/* Focus visible para accesibilidad */
+.suggestion-item:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: -2px;
+  border-radius: 8px;
 }

@@ -5,6 +5,200 @@
 let currentDetailRestId = null;
 let detailResizeTimeout = null;
 
+// ===== CONSTANTES DE DÍAS =====
+const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const DIAS_ABREVIADOS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+// ===== FUNCIÓN PARA PARSEAR HORARIO TEXTUAL A OBJETO POR DÍA =====
+function parsearHorario(horarioStr) {
+  if (!horarioStr) return null;
+  
+  const simpleRegex = /^(\d{1,2}:\d{2}\s*(?:AM|PM))\s*[-–]\s*(\d{1,2}:\d{2}\s*(?:AM|PM))$/i;
+  const simpleMatch = horarioStr.match(simpleRegex);
+  if (simpleMatch) {
+    const resultado = {};
+    DIAS_SEMANA.forEach(function(dia) {
+      resultado[dia] = `${simpleMatch[1]} - ${simpleMatch[2]}`;
+    });
+    return resultado;
+  }
+  
+  const resultado = {};
+  let partes = horarioStr.split('|').map(function(s) { return s.trim(); });
+  
+  if (partes.length === 1) {
+    partes = horarioStr.split(',').map(function(s) { return s.trim(); });
+  }
+  
+  partes.forEach(function(parte) {
+    if (!parte) return;
+    
+    const rangoRegex = /^([A-Za-záéíóúÁÉÍÓÚñÑ]+)\s*[-–]\s*([A-Za-záéíóúÁÉÍÓÚñÑ]+)\s*:\s*(.+)$/i;
+    const rangoMatch = parte.match(rangoRegex);
+    if (rangoMatch) {
+      const diaInicio = rangoMatch[1].trim();
+      const diaFin = rangoMatch[2].trim();
+      const horario = rangoMatch[3].trim();
+      
+      const idxInicio = DIAS_SEMANA.indexOf(diaInicio);
+      const idxFin = DIAS_SEMANA.indexOf(diaFin);
+      
+      if (idxInicio !== -1 && idxFin !== -1) {
+        for (let i = idxInicio; i <= idxFin; i++) {
+          resultado[DIAS_SEMANA[i]] = horario;
+        }
+      }
+      return;
+    }
+    
+    const diaRegex = /^([A-Za-záéíóúÁÉÍÓÚñÑ,\s]+)\s*:\s*(.+)$/i;
+    const diaMatch = parte.match(diaRegex);
+    if (diaMatch) {
+      const diasStr = diaMatch[1].trim();
+      const horario = diaMatch[2].trim();
+      
+      let diasList = diasStr.split(/[,y]\s*/).map(function(s) { return s.trim(); });
+      
+      diasList.forEach(function(dia) {
+        const diaLimpio = dia.replace(/[.,]/g, '').trim();
+        const idx = DIAS_SEMANA.findIndex(function(d) { 
+          return d.toLowerCase() === diaLimpio.toLowerCase() || 
+                 d.toLowerCase().startsWith(diaLimpio.toLowerCase());
+        });
+        if (idx !== -1) {
+          resultado[DIAS_SEMANA[idx]] = horario;
+        }
+      });
+      return;
+    }
+    
+    if (parte.toLowerCase().includes('todos los días') || parte.toLowerCase().includes('todos los dias')) {
+      const horarioMatch = parte.match(/\d{1,2}:\d{2}\s*(?:AM|PM)\s*[-–]\s*\d{1,2}:\d{2}\s*(?:AM|PM)/i);
+      if (horarioMatch) {
+        DIAS_SEMANA.forEach(function(dia) {
+          resultado[dia] = horarioMatch[0];
+        });
+      }
+    }
+  });
+  
+  if (Object.keys(resultado).length === 0) return null;
+  return resultado;
+}
+
+// ===== FUNCIÓN PARA GENERAR HTML DE HORARIOS (CON POPOVER Y Z-INDEX CORREGIDO) =====
+function generarHorariosHTML(horarioStr) {
+  if (!horarioStr) {
+    return '<span class="horario-simple">Horario no disponible</span>';
+  }
+  
+  const horarios = parsearHorario(horarioStr);
+  if (!horarios) {
+    return `<span class="horario-simple">${horarioStr}</span>`;
+  }
+  
+  // Determinar el día actual
+  const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const hoy = new Date().getDay();
+  const diaHoy = diasSemana[hoy];
+  
+  // Obtener el horario del día actual
+  const horarioHoy = horarios[diaHoy] || 'Cerrado';
+  const esCerradoHoy = horarioHoy.toLowerCase().includes('cerrado');
+  
+  // Generar HTML para el resumen (solo el texto del día actual)
+  let resumenHTML = `
+    <span class="horario-resumen-hora ${esCerradoHoy ? 'cerrado' : ''}">
+      <span class="estado-indicador ${esCerradoHoy ? 'cerrado' : 'abierto'}"></span>
+      ${horarioHoy}
+    </span>
+  `;
+  
+  // Generar HTML para el popover con todos los días
+  let todosDiasHTML = '';
+  DIAS_SEMANA.forEach(function(dia) {
+    const horario = horarios[dia] || 'Cerrado';
+    const esHoy = (dia === diaHoy);
+    const esCerrado = horario.toLowerCase().includes('cerrado');
+    
+    let clase = 'horario-dia-item';
+    if (esHoy) clase += ' hoy';
+    if (esCerrado) clase += ' cerrado';
+    
+    let horarioDisplay = esCerrado ? 'Cerrado' : horario;
+    let indicadorClase = 'estado-indicador';
+    if (esCerrado) {
+      indicadorClase += ' cerrado';
+    } else {
+      indicadorClase += ' abierto';
+    }
+    
+    todosDiasHTML += `
+      <div class="${clase}">
+        <span class="dia">${dia}</span>
+        <span class="horario-text ${esCerrado ? 'cerrado' : ''}">
+          <span class="${indicadorClase}"></span>
+          ${horarioDisplay}
+        </span>
+      </div>
+    `;
+  });
+  
+  return `
+    <div class="horarios-wrapper">
+      <div class="horario-resumen" onclick="toggleHorarioPopover(this)">
+        ${resumenHTML}
+        <span class="horario-resumen-toggle">
+          <i class="fa-solid fa-chevron-down"></i>
+        </span>
+      </div>
+      <div class="horarios-popover" style="max-height: 280px; overflow-y: auto; z-index: 5;">
+        ${todosDiasHTML}
+      </div>
+    </div>
+  `;
+}
+
+// ===== FUNCIÓN PARA TOGGLE DEL POPOVER =====
+function toggleHorarioPopover(element) {
+  const wrapper = element.closest('.horarios-wrapper');
+  if (!wrapper) return;
+  
+  const popover = wrapper.querySelector('.horarios-popover');
+  const toggleIcon = element.querySelector('.horario-resumen-toggle i');
+  
+  // Cerrar cualquier otro popover abierto
+  document.querySelectorAll('.horarios-popover.abierto').forEach(function(p) {
+    if (p !== popover) {
+      p.classList.remove('abierto');
+      p.style.display = 'none';
+      const wrapperParent = p.closest('.horarios-wrapper');
+      if (wrapperParent) {
+        const icon = wrapperParent.querySelector('.horario-resumen-toggle i');
+        if (icon) icon.className = 'fa-solid fa-chevron-down';
+      }
+    }
+  });
+  
+  if (popover.classList.contains('abierto')) {
+    popover.classList.remove('abierto');
+    popover.style.display = 'none';
+    if (toggleIcon) {
+      toggleIcon.className = 'fa-solid fa-chevron-down';
+    }
+  } else {
+    popover.classList.add('abierto');
+    popover.style.display = 'block';
+    // Asegurar que el scroll aparece si el contenido excede la altura
+    if (popover.scrollHeight > 280) {
+      popover.style.overflowY = 'auto';
+    }
+    if (toggleIcon) {
+      toggleIcon.className = 'fa-solid fa-chevron-up';
+    }
+  }
+}
+
 // ========== FUNCIONES DE COMPARTIR ==========
 
 function getIconoCompartir(categoria) {
@@ -412,10 +606,14 @@ function renderRestauranteDetalle(id) {
     `<button onclick="document.getElementById('det-main-img').src='${img}'" class="${i === 0 ? 'border-brand-primary' : ''}"><img src="${img}" alt="thumb"></button>`
   ).join('');
 
+  // BADGES DE CARACTERÍSTICAS
   let amenitiesHtml = '';
   if (r.aire) amenitiesHtml += `<span class="amenity-tag"><i class="fa-solid fa-cloud-sun"></i> Terraza</span>`;
   if (r.clima) amenitiesHtml += `<span class="amenity-tag"><i class="fa-solid fa-snowflake"></i> Climatizado</span>`;
   if (r.parqueo) amenitiesHtml += `<span class="amenity-tag"><i class="fa-solid fa-square-parking"></i> Parqueo Privado</span>`;
+
+  // HORARIOS CON POPOVER
+  const horariosHTML = generarHorariosHTML(r.horario);
 
   // Especialidades Sugeridas
   let platosPopularesParaMostrar = r.platosPopulares || [];
@@ -440,7 +638,6 @@ function renderRestauranteDetalle(id) {
   const isDesktop = window.innerWidth >= 768;
 
   // ===== GENERAR BOTONES =====
-  // Todos los botones en una sola fila para escritorio
   const desktopButtonsHtml = `
     <div class="detail-actions-wrapper">
       <button class="btn-action" onclick="toggleCartaModal('${r.id}')">
@@ -458,7 +655,6 @@ function renderRestauranteDetalle(id) {
     </div>
   `;
 
-  // Botones móviles: circulares, solo iconos
   const mobileButtonsHtml = `
     <div class="detail-actions-mobile">
       <button class="btn-mobile-circle" onclick="toggleCartaModal('${r.id}')">
@@ -477,7 +673,6 @@ function renderRestauranteDetalle(id) {
   `;
 
   if (isDesktop) {
-    // VERSIÓN ESCRITORIO
     container.innerHTML = `
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div class="lg:col-span-6">
@@ -502,14 +697,18 @@ function renderRestauranteDetalle(id) {
               </div>
               <hr class="detail-divider">
               <div class="detail-info-grid">
-                <div class="info-row"><i class="fa-regular fa-clock"></i> <span><strong>Horario:</strong> ${r.horario}</span></div>
+                <div class="info-row horario-row">
+                  <i class="fa-regular fa-clock"></i>
+                  <span><strong>Horario:</strong></span>
+                  <div class="horario-container-inline">
+                    ${horariosHTML}
+                  </div>
+                </div>
                 <div class="info-row"><i class="fa-solid fa-location-arrow"></i> <span><strong>Dirección:</strong> ${r.direccion}</span></div>
                 <div class="info-row"><i class="fa-solid fa-phone"></i> <span><strong>Contacto:</strong> ${r.telefono}</span></div>
               </div>
               <hr class="detail-divider">
               ${amenitiesHtml ? `<div class="detail-amenities">${amenitiesHtml}</div>` : ''}
-              
-              <!-- BOTONES ESCRITORIO - UNA SOLA FILA -->
               ${desktopButtonsHtml}
             </div>
           </div>
@@ -527,7 +726,6 @@ function renderRestauranteDetalle(id) {
       </div>
     `;
   } else {
-    // VERSIÓN MÓVIL
     container.innerHTML = `
       <div class="detail-panel">
         <div class="detail-image-wrapper">
@@ -546,14 +744,18 @@ function renderRestauranteDetalle(id) {
           </div>
           <hr class="detail-divider">
           <div class="detail-info-grid">
-            <div class="info-row"><i class="fa-regular fa-clock"></i> <span><strong>Horario:</strong> ${r.horario}</span></div>
+            <div class="info-row horario-row">
+              <i class="fa-regular fa-clock"></i>
+              <span><strong>Horario:</strong></span>
+              <div class="horario-container-inline">
+                ${horariosHTML}
+              </div>
+            </div>
             <div class="info-row"><i class="fa-solid fa-location-arrow"></i> <span><strong>Dirección:</strong> ${r.direccion}</span></div>
             <div class="info-row"><i class="fa-solid fa-phone"></i> <span><strong>Contacto:</strong> ${r.telefono}</span></div>
           </div>
           <hr class="detail-divider">
           ${amenitiesHtml ? `<div class="detail-amenities">${amenitiesHtml}</div>` : ''}
-          
-          <!-- BOTONES MÓVIL -->
           ${mobileButtonsHtml}
         </div>
       </div>
@@ -570,9 +772,8 @@ function renderRestauranteDetalle(id) {
     `;
   }
 
-  // ===== ASIGNAR EVENT LISTENERS A LOS BOTONES =====
+  // ===== ASIGNAR EVENT LISTENERS =====
   setTimeout(() => {
-    // Botón "Cómo llegar" (escritorio)
     const btnComoLlegar = document.getElementById('btn-como-llegar-detalle');
     if (btnComoLlegar && r.lat && r.lng) {
       btnComoLlegar.addEventListener('click', () => {
@@ -586,7 +787,6 @@ function renderRestauranteDetalle(id) {
       });
     }
     
-    // Botón "Cómo llegar" (móvil)
     const btnComoLlegarMobile = document.getElementById('btn-como-llegar-mobile');
     if (btnComoLlegarMobile && r.lat && r.lng) {
       btnComoLlegarMobile.addEventListener('click', () => {
@@ -600,7 +800,6 @@ function renderRestauranteDetalle(id) {
       });
     }
     
-    // Botón "Compartir" (escritorio)
     const btnCompartir = document.getElementById('btn-compartir-detalle');
     if (btnCompartir) {
       btnCompartir.addEventListener('click', () => {
@@ -608,7 +807,6 @@ function renderRestauranteDetalle(id) {
       });
     }
     
-    // Botón "Compartir" (móvil)
     const btnCompartirMobile = document.getElementById('btn-compartir-mobile');
     if (btnCompartirMobile) {
       btnCompartirMobile.addEventListener('click', () => {
@@ -622,32 +820,54 @@ function renderRestauranteDetalle(id) {
     let mapDiv = document.getElementById('detalle-mapa');
     if(mapDiv && r.lat && r.lng) {
       if(window.detailMap) window.detailMap.remove();
-      let isDark = document.documentElement.classList.contains('dark');
-      let tileUrl = isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+      
+      let tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+      
       window.detailMap = L.map(mapDiv).setView([r.lat, r.lng], 16);
-      L.tileLayer(tileUrl, { attribution: '&copy; Carto' }).addTo(window.detailMap);
-      let blueIcon = L.divIcon({ html: `<div class="w-8 h-8 rounded-full flex items-center justify-center shadow-lg" style="background-color: #3498DB; border: 2px solid white;"><i class="fa-solid fa-utensils text-white text-xs"></i></div>`, iconSize: [32,32], iconAnchor: [16,32] });
-      L.marker([r.lat, r.lng], { icon: blueIcon }).addTo(window.detailMap).bindPopup(`<b>${escapeHtml(r.direccion)}</b>`).openPopup();
+      L.tileLayer(tileUrl, { 
+        attribution: '&copy; <a href="https://www.cartodb.com/">CartoDB</a> | &copy; <a href="https://www.openstreetmap.org/">OSM</a>',
+        maxZoom: 19,
+        minZoom: 8,
+        updateWhenIdle: false,
+        updateWhenZooming: true,
+        keepBuffer: 4
+      }).addTo(window.detailMap);
+      
+      let blueIcon = L.divIcon({ 
+        html: `<div class="w-8 h-8 rounded-full flex items-center justify-center shadow-lg" style="background-color: #3498DB; border: 2px solid white;"><i class="fa-solid fa-utensils text-white text-xs"></i></div>`, 
+        iconSize: [32,32], 
+        iconAnchor: [16,32] 
+      });
+      
+      L.marker([r.lat, r.lng], { icon: blueIcon })
+        .addTo(window.detailMap)
+        .bindPopup(`<b>${escapeHtml(r.direccion)}</b>`)
+        .openPopup();
+      
       let centerBtn = document.getElementById('detalle-center-map');
-      if(centerBtn) centerBtn.onclick = () => { if(window.detailMap) window.detailMap.setView([r.lat, r.lng], 16); };
+      if(centerBtn) centerBtn.onclick = () => { 
+        if(window.detailMap) window.detailMap.setView([r.lat, r.lng], 16); 
+      };
+      
       if(window.detailMap.getContainer) {
         window.detailMap.getContainer().style.zIndex = '1';
       }
+      
+      setTimeout(() => {
+        if(window.detailMap) window.detailMap.invalidateSize();
+      }, 100);
     }
   }, 250);
 }
 
-// ===== RESPONSIVE - REDIMENSIONAR SIN RECARGAR =====
+// ===== RESPONSIVE =====
 function handleResizeDetalle() {
-  // Limpiar timeout anterior
   if (detailResizeTimeout) {
     clearTimeout(detailResizeTimeout);
   }
   
   detailResizeTimeout = setTimeout(() => {
-    // Si estamos en la página de detalle y hay un restaurante cargado
     if (currentDetailRestId && document.getElementById('restaurante-detalle-content')) {
-      // Verificar si la página de detalle está visible
       const detallePage = document.getElementById('page-detalle');
       if (detallePage && !detallePage.classList.contains('hidden')) {
         renderRestauranteDetalle(currentDetailRestId);
@@ -656,7 +876,6 @@ function handleResizeDetalle() {
   }, 300);
 }
 
-// Agregar listener de resize
 window.addEventListener('resize', handleResizeDetalle);
 
 // ===== MODAL CARTA =====
@@ -724,7 +943,6 @@ function renderResenasPage(restId) {
   let container = document.getElementById('resenas-detalle-content');
   if (!container) return;
 
-  // Generar HTML de reseñas existentes
   let reseñasHtml = '';
   if (resenas.length === 0) {
     reseñasHtml = '<p class="text-center py-8 text-brand-text/60">No hay reseñas todavía. ¡Sé el primero en opinar!</p>';
@@ -741,7 +959,6 @@ function renderResenasPage(restId) {
     `).join('');
   }
 
-  // Si el usuario NO ha iniciado sesión, mostrar mensaje y botón
   let loginBox = '';
   if (!user) {
     loginBox = `
@@ -756,7 +973,6 @@ function renderResenasPage(restId) {
       </div>
     `;
   } else {
-    // Si el usuario ha iniciado sesión, mostrar el formulario de reseña
     loginBox = `
       <div class="reseñas-divider"></div>
       <div class="mt-6 pt-4">
@@ -810,4 +1026,43 @@ function submitReviewFromResenasPage(restId) {
   showToast("Reseña Registrada", "Gracias por tu opinión", "success");
   renderResenasPage(restId);
   if(currentDetailRestId === restId) renderRestauranteDetalle(restId);
+}
+
+// ===== TOAST =====
+function showToast(title, desc, type) {
+    let toast = document.getElementById('toast-notification');
+    if (!toast) {
+        const toastDiv = document.createElement('div');
+        toastDiv.id = 'toast-notification';
+        toastDiv.className = 'fixed top-24 right-6 z-50 transform translate-x-96 opacity-0 transition-all duration-300 flex items-center gap-3 bg-brand-card border border-brand-border px-5 py-4 rounded-2xl shadow-xl max-w-sm';
+        toastDiv.innerHTML = `
+            <div id="toast-icon-wrapper" class="w-10 h-10 rounded-full flex items-center justify-center text-white"></div>
+            <div><h4 id="toast-title" class="font-bold text-sm"></h4><p id="toast-desc" class="text-xs opacity-80"></p></div>
+        `;
+        document.body.appendChild(toastDiv);
+        toast = toastDiv;
+    }
+    
+    const iconWrapper = document.getElementById('toast-icon-wrapper');
+    document.getElementById('toast-title').innerText = title;
+    document.getElementById('toast-desc').innerText = desc;
+    
+    iconWrapper.className = "w-10 h-10 rounded-full flex items-center justify-center text-white";
+    if(type === "success") { 
+        iconWrapper.classList.add("bg-green-500"); 
+        iconWrapper.innerHTML = '<i class="fa-solid fa-circle-check"></i>'; 
+    } else if(type === "error") { 
+        iconWrapper.classList.add("bg-red-500"); 
+        iconWrapper.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>'; 
+    } else { 
+        iconWrapper.classList.add("bg-brand-primary"); 
+        iconWrapper.innerHTML = '<i class="fa-solid fa-circle-info"></i>'; 
+    }
+    
+    toast.classList.remove('translate-x-96','opacity-0');
+    toast.classList.add('translate-x-0','opacity-100');
+    setTimeout(() => {
+        toast.classList.remove('translate-x-0','opacity-100');
+        toast.classList.add('translate-x-96','opacity-0');
+    }, 4000);
 }

@@ -11,8 +11,8 @@ function initMapGeneral() {
   leafletMap = L.map('mapa-principal', { zoomControl: true }).setView([23.1136, -82.3666], 12);
   L.control.zoom({ position: 'topleft' }).addTo(leafletMap);
   
-  let isDark = document.documentElement.classList.contains('dark');
-  let tileUrl = isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+  // 🔥 SIEMPRE usar tile claro (el filtro CSS se encarga del modo oscuro)
+  let tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
   L.tileLayer(tileUrl, { attribution: '&copy; Carto' }).addTo(leafletMap);
 
   let centerControl = L.control({ position: 'topright' });
