@@ -5,6 +5,201 @@
 let currentDetailRestId = null;
 let detailResizeTimeout = null;
 
+// ===== CONSTANTES DE DÍAS =====
+const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const DIAS_ABREVIADOS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+// ===== FUNCIÓN PARA PARSEAR HORARIO TEXTUAL A OBJETO POR DÍA =====
+function parsearHorario(horarioStr) {
+  if (!horarioStr) return null;
+  
+  const simpleRegex = /^(\d{1,2}:\d{2}\s*(?:AM|PM))\s*[-–]\s*(\d{1,2}:\d{2}\s*(?:AM|PM))$/i;
+  const simpleMatch = horarioStr.match(simpleRegex);
+  if (simpleMatch) {
+    const resultado = {};
+    DIAS_SEMANA.forEach(function(dia) {
+      resultado[dia] = `${simpleMatch[1]} - ${simpleMatch[2]}`;
+    });
+    return resultado;
+  }
+  
+  const resultado = {};
+  let partes = horarioStr.split('|').map(function(s) { return s.trim(); });
+  
+  if (partes.length === 1) {
+    partes = horarioStr.split(',').map(function(s) { return s.trim(); });
+  }
+  
+  partes.forEach(function(parte) {
+    if (!parte) return;
+    
+    const rangoRegex = /^([A-Za-záéíóúÁÉÍÓÚñÑ]+)\s*[-–]\s*([A-Za-záéíóúÁÉÍÓÚñÑ]+)\s*:\s*(.+)$/i;
+    const rangoMatch = parte.match(rangoRegex);
+    if (rangoMatch) {
+      const diaInicio = rangoMatch[1].trim();
+      const diaFin = rangoMatch[2].trim();
+      const horario = rangoMatch[3].trim();
+      
+      const idxInicio = DIAS_SEMANA.indexOf(diaInicio);
+      const idxFin = DIAS_SEMANA.indexOf(diaFin);
+      
+      if (idxInicio !== -1 && idxFin !== -1) {
+        for (let i = idxInicio; i <= idxFin; i++) {
+          resultado[DIAS_SEMANA[i]] = horario;
+        }
+      }
+      return;
+    }
+    
+    const diaRegex = /^([A-Za-záéíóúÁÉÍÓÚñÑ,\s]+)\s*:\s*(.+)$/i;
+    const diaMatch = parte.match(diaRegex);
+    if (diaMatch) {
+      const diasStr = diaMatch[1].trim();
+      const horario = diaMatch[2].trim();
+      
+      let diasList = diasStr.split(/[,y]\s*/).map(function(s) { return s.trim(); });
+      
+      diasList.forEach(function(dia) {
+        const diaLimpio = dia.replace(/[.,]/g, '').trim();
+        const idx = DIAS_SEMANA.findIndex(function(d) { 
+          return d.toLowerCase() === diaLimpio.toLowerCase() || 
+                 d.toLowerCase().startsWith(diaLimpio.toLowerCase());
+        });
+        if (idx !== -1) {
+          resultado[DIAS_SEMANA[idx]] = horario;
+        }
+      });
+      return;
+    }
+    
+    if (parte.toLowerCase().includes('todos los días') || parte.toLowerCase().includes('todos los dias')) {
+      const horarioMatch = parte.match(/\d{1,2}:\d{2}\s*(?:AM|PM)\s*[-–]\s*\d{1,2}:\d{2}\s*(?:AM|PM)/i);
+      if (horarioMatch) {
+        DIAS_SEMANA.forEach(function(dia) {
+          resultado[dia] = horarioMatch[0];
+        });
+      }
+    }
+  });
+  
+  if (Object.keys(resultado).length === 0) return null;
+  return resultado;
+}
+
+// ===== FUNCIÓN PARA GENERAR HTML DE HORARIOS (CON POPOVER Y SCROLL) =====
+function generarHorariosHTML(horarioStr) {
+  if (!horarioStr) {
+    return '<span class="horario-simple">Horario no disponible</span>';
+  }
+  
+  const horarios = parsearHorario(horarioStr);
+  if (!horarios) {
+    return `<span class="horario-simple">${horarioStr}</span>`;
+  }
+  
+  // Determinar el día actual
+  const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const hoy = new Date().getDay();
+  const diaHoy = diasSemana[hoy];
+  
+  // Obtener el horario del día actual - si no existe, mostrar "Cerrado"
+  const horarioHoy = horarios[diaHoy] || 'Cerrado';
+  const esCerradoHoy = horarioHoy.toLowerCase().includes('cerrado');
+  
+  // Generar HTML para el resumen (solo el texto del día actual)
+  let resumenHTML = `
+    <span class="horario-resumen-hora ${esCerradoHoy ? 'cerrado' : ''}">
+      <span class="estado-indicador ${esCerradoHoy ? 'cerrado' : 'abierto'}"></span>
+      ${horarioHoy}
+    </span>
+  `;
+  
+  // Generar HTML para el popover con TODOS los días de la semana
+  let todosDiasHTML = '';
+  DIAS_SEMANA.forEach(function(dia) {
+    // Si el día no está en el objeto, mostrar "Cerrado"
+    const horario = horarios[dia] || 'Cerrado';
+    const esHoy = (dia === diaHoy);
+    const esCerrado = horario.toLowerCase().includes('cerrado');
+    
+    let clase = 'horario-dia-item';
+    if (esHoy) clase += ' hoy';
+    if (esCerrado) clase += ' cerrado';
+    
+    let horarioDisplay = esCerrado ? 'Cerrado' : horario;
+    let indicadorClase = 'estado-indicador';
+    if (esCerrado) {
+      indicadorClase += ' cerrado';
+    } else {
+      indicadorClase += ' abierto';
+    }
+    
+    todosDiasHTML += `
+      <div class="${clase}">
+        <span class="dia">${dia}</span>
+        <span class="horario-text ${esCerrado ? 'cerrado' : ''}">
+          <span class="${indicadorClase}"></span>
+          ${horarioDisplay}
+        </span>
+      </div>
+    `;
+  });
+  
+  return `
+    <div class="horarios-wrapper">
+      <div class="horario-resumen" onclick="toggleHorarioPopover(this)">
+        ${resumenHTML}
+        <span class="horario-resumen-toggle">
+          <i class="fa-solid fa-chevron-down"></i>
+        </span>
+      </div>
+      <div class="horarios-popover" style="max-height: 280px; overflow-y: auto; z-index: 5;">
+        ${todosDiasHTML}
+      </div>
+    </div>
+  `;
+}
+
+// ===== FUNCIÓN PARA TOGGLE DEL POPOVER =====
+function toggleHorarioPopover(element) {
+  const wrapper = element.closest('.horarios-wrapper');
+  if (!wrapper) return;
+  
+  const popover = wrapper.querySelector('.horarios-popover');
+  const toggleIcon = element.querySelector('.horario-resumen-toggle i');
+  
+  // Cerrar cualquier otro popover abierto
+  document.querySelectorAll('.horarios-popover.abierto').forEach(function(p) {
+    if (p !== popover) {
+      p.classList.remove('abierto');
+      p.style.display = 'none';
+      const wrapperParent = p.closest('.horarios-wrapper');
+      if (wrapperParent) {
+        const icon = wrapperParent.querySelector('.horario-resumen-toggle i');
+        if (icon) icon.className = 'fa-solid fa-chevron-down';
+      }
+    }
+  });
+  
+  if (popover.classList.contains('abierto')) {
+    popover.classList.remove('abierto');
+    popover.style.display = 'none';
+    if (toggleIcon) {
+      toggleIcon.className = 'fa-solid fa-chevron-down';
+    }
+  } else {
+    popover.classList.add('abierto');
+    popover.style.display = 'block';
+    // Asegurar que el scroll aparece si el contenido excede la altura
+    if (popover.scrollHeight > 280) {
+      popover.style.overflowY = 'auto';
+    }
+    if (toggleIcon) {
+      toggleIcon.className = 'fa-solid fa-chevron-up';
+    }
+  }
+}
+
 // ========== FUNCIÓN CÓMO LLEGAR ==========
 function abrirRutaConGeolocalizacion(lat, lng, nombre) {
     if (!lat || !lng) {
@@ -161,11 +356,10 @@ function closeCompartirModal() {
     if (modal) modal.classList.add('hidden');
 }
 
-// ========== FUNCIÓN TOAST (si no existe en main.js) ==========
+// ========== FUNCIÓN TOAST ==========
 function showToast(title, desc, type) {
     let toast = document.getElementById('toast-notification');
     if (!toast) {
-        // Crear toast si no existe
         const toastDiv = document.createElement('div');
         toastDiv.id = 'toast-notification';
         toastDiv.className = 'fixed top-24 right-6 z-50 transform translate-x-96 opacity-0 transition-all duration-300 flex items-center gap-3 bg-brand-card border border-brand-border px-5 py-4 rounded-2xl shadow-xl max-w-sm';
@@ -219,10 +413,14 @@ function renderRestauranteDetalle(id) {
     `<button onclick="document.getElementById('det-main-img').src='${img}'" class="${i === 0 ? 'border-brand-primary' : ''}"><img src="${img}" alt="thumb"></button>`
   ).join('');
 
+  // BADGES DE CARACTERÍSTICAS
   let amenitiesHtml = '';
   if (r.aire) amenitiesHtml += `<span class="amenity-tag"><i class="fa-solid fa-cloud-sun"></i> Terraza</span>`;
   if (r.clima) amenitiesHtml += `<span class="amenity-tag"><i class="fa-solid fa-snowflake"></i> Climatizado</span>`;
   if (r.parqueo) amenitiesHtml += `<span class="amenity-tag"><i class="fa-solid fa-square-parking"></i> Parqueo Privado</span>`;
+
+  // HORARIOS CON POPOVER
+  const horariosHTML = generarHorariosHTML(r.horario);
 
   let platosPopularesParaMostrar = r.platosPopulares || [];
   if (platosPopularesParaMostrar.length === 0 && r.seccionesCarta && r.seccionesCarta.length > 0) {
@@ -299,7 +497,13 @@ function renderRestauranteDetalle(id) {
               </div>
               <hr class="detail-divider">
               <div class="detail-info-grid">
-                <div class="info-row"><i class="fa-regular fa-clock"></i> <span><strong>Horario:</strong> ${r.horario}</span></div>
+                <div class="info-row horario-row">
+                  <i class="fa-regular fa-clock"></i>
+                  <span><strong>Horario:</strong></span>
+                  <div class="horario-container-inline">
+                    ${horariosHTML}
+                  </div>
+                </div>
                 <div class="info-row"><i class="fa-solid fa-location-arrow"></i> <span><strong>Dirección:</strong> ${r.direccion}</span></div>
                 <div class="info-row"><i class="fa-solid fa-phone"></i> <span><strong>Contacto:</strong> ${r.telefono}</span></div>
               </div>
@@ -338,7 +542,13 @@ function renderRestauranteDetalle(id) {
           </div>
           <hr class="detail-divider">
           <div class="detail-info-grid">
-            <div class="info-row"><i class="fa-regular fa-clock"></i> <span><strong>Horario:</strong> ${r.horario}</span></div>
+            <div class="info-row horario-row">
+              <i class="fa-regular fa-clock"></i>
+              <span><strong>Horario:</strong></span>
+              <div class="horario-container-inline">
+                ${horariosHTML}
+              </div>
+            </div>
             <div class="info-row"><i class="fa-solid fa-location-arrow"></i> <span><strong>Dirección:</strong> ${r.direccion}</span></div>
             <div class="info-row"><i class="fa-solid fa-phone"></i> <span><strong>Contacto:</strong> ${r.telefono}</span></div>
           </div>
@@ -358,12 +568,55 @@ function renderRestauranteDetalle(id) {
     `;
   }
 
+  // ===== ASIGNAR EVENT LISTENERS =====
+  setTimeout(() => {
+    const btnComoLlegar = document.getElementById('btn-como-llegar-detalle');
+    if (btnComoLlegar && r.lat && r.lng) {
+      btnComoLlegar.addEventListener('click', () => {
+        abrirRutaConGeolocalizacion(r.lat, r.lng, r.nombre);
+      });
+    } else if (btnComoLlegar) {
+      btnComoLlegar.style.opacity = '0.5';
+      btnComoLlegar.style.cursor = 'not-allowed';
+      btnComoLlegar.addEventListener('click', () => {
+        showToast('❌ Ubicación no disponible', 'Este restaurante no tiene coordenadas asociadas', 'error');
+      });
+    }
+    
+    const btnComoLlegarMobile = document.getElementById('btn-como-llegar-mobile');
+    if (btnComoLlegarMobile && r.lat && r.lng) {
+      btnComoLlegarMobile.addEventListener('click', () => {
+        abrirRutaConGeolocalizacion(r.lat, r.lng, r.nombre);
+      });
+    } else if (btnComoLlegarMobile) {
+      btnComoLlegarMobile.style.opacity = '0.5';
+      btnComoLlegarMobile.style.cursor = 'not-allowed';
+      btnComoLlegarMobile.addEventListener('click', () => {
+        showToast('❌ Ubicación no disponible', 'Este restaurante no tiene coordenadas asociadas', 'error');
+      });
+    }
+    
+    const btnCompartir = document.getElementById('btn-compartir-detalle');
+    if (btnCompartir) {
+      btnCompartir.addEventListener('click', () => {
+        mostrarMenuCompartir(r);
+      });
+    }
+    
+    const btnCompartirMobile = document.getElementById('btn-compartir-mobile');
+    if (btnCompartirMobile) {
+      btnCompartirMobile.addEventListener('click', () => {
+        mostrarMenuCompartir(r);
+      });
+    }
+  }, 100);
+
+  // ===== INICIALIZAR MAPA =====
   setTimeout(() => {
     let mapDiv = document.getElementById('detalle-mapa');
     if(mapDiv && r.lat && r.lng) {
       if(window.detailMap) window.detailMap.remove();
       
-      // 🔥 SIEMPRE usar el tile claro (el filtro CSS se encarga del modo oscuro)
       let tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
       
       window.detailMap = L.map(mapDiv).setView([r.lat, r.lng], 16);
@@ -396,7 +649,6 @@ function renderRestauranteDetalle(id) {
         window.detailMap.getContainer().style.zIndex = '1';
       }
       
-      // Forzar actualización del mapa
       setTimeout(() => {
         if(window.detailMap) window.detailMap.invalidateSize();
       }, 100);

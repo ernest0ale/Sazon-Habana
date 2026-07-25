@@ -22,10 +22,19 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
+
+/* 🔥 Iconos de categorías - Mismo estilo que versión con usuarios */
 .home-category-btn .cat-icon {
   font-size: 1.75rem;
   color: var(--brand-primary);
+  transition: color 0.3s ease;
 }
+
+/* 🔥 Modo oscuro: iconos de categorías en #E8F0E5 */
+.dark .home-category-btn .cat-icon {
+  color: #E8F0E5 !important;
+}
+
 .home-category-btn .cat-label {
   font-size: 0.7rem;
   font-weight: 600;
@@ -33,6 +42,32 @@
   opacity: 0.8;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+}
+
+/* 🔥 Texto "Busca según tus antojos" en modo oscuro */
+.dark .antojos-title {
+  color: #E8F0E5 !important;
+}
+
+/* 🔥 Lupa del buscador en modo oscuro */
+.dark .search-icon {
+  color: #E8F0E5 !important;
+}
+
+/* 🔥 Iconos de listas (recientes, destacados, reseñas) */
+.list-icon {
+  transition: color 0.3s ease;
+  margin-right: 8px;
+}
+
+/* Modo claro: los iconos tienen el color primario */
+.list-icon {
+  color: var(--brand-primary);
+}
+
+/* Modo oscuro: los iconos tienen el mismo color que el texto de las listas */
+.dark .list-icon {
+  color: var(--brand-text);
 }
 
 /* Carrusel */

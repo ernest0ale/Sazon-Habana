@@ -6,6 +6,11 @@ let listadoCurrentPage = 1;
 let itemsPerPage = 9;
 let listadoQuery = '';
 
+// ===== VARIABLES PARA NAVEGACIÓN DEL BUSCADOR =====
+let searchSuggestions = [];
+let selectedSuggestionIndex = -1;
+let isSearchOverlayOpen = false;
+
 // ===== FUNCIÓN PARA ACTUALIZAR LOGO SEGÚN TEMA =====
 function updateHeaderLogo() {
   const isDark = document.documentElement.classList.contains('dark');
@@ -275,19 +280,39 @@ function resetAllFilters() {
   applyFiltersAndRender();
 }
 
-// ===== BÚSQUEDA =====
+// ===== FUNCIONES PARA CONTROLAR EL SCROLL DEL BODY =====
+function disableBodyScroll() {
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
+}
+
+function enableBodyScroll() {
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
+}
+
+// ===== BÚSQUEDA CON NAVEGACIÓN COMPLETA POR TECLADO =====
 function openSearchOverlay() { 
   const overlay = document.getElementById('search-overlay');
   if (overlay) {
     overlay.classList.add('active'); 
     overlay.style.display = 'flex';
+    isSearchOverlayOpen = true;
+    disableBodyScroll();
+    
     const input = document.getElementById('search-overlay-input');
     if (input) {
-      input.focus(); 
+      setTimeout(function() {
+        input.focus();
+      }, 50);
       input.value = '';
     }
     const suggestions = document.getElementById('search-suggestions');
-    if (suggestions) suggestions.innerHTML = ''; 
+    if (suggestions) suggestions.innerHTML = '';
+    selectedSuggestionIndex = -1;
+    searchSuggestions = [];
   }
 }
 
@@ -296,9 +321,13 @@ function closeSearchOverlay() {
   if (overlay) {
     overlay.classList.remove('active'); 
     overlay.style.display = 'none';
+    isSearchOverlayOpen = false;
+    enableBodyScroll();
   }
   const suggestions = document.getElementById('search-suggestions');
-  if (suggestions) suggestions.innerHTML = ''; 
+  if (suggestions) suggestions.innerHTML = '';
+  selectedSuggestionIndex = -1;
+  searchSuggestions = [];
 }
 
 function executeSearch() {
@@ -310,11 +339,101 @@ function executeSearch() {
   }
 }
 
+// ===== NAVEGACIÓN CON TECLAS (Flechas + Tab) =====
+function handleSearchKeydown(e) {
+  const key = e.key;
+  
+  if (key === 'ArrowDown') {
+    e.preventDefault();
+    if (searchSuggestions.length === 0) return;
+    
+    if (selectedSuggestionIndex === -1) {
+      selectedSuggestionIndex = 0;
+    } else {
+      if (selectedSuggestionIndex >= searchSuggestions.length - 1) {
+        // Si estamos en la última, volvemos a la primera (bucle)
+        selectedSuggestionIndex = 0;
+      } else {
+        selectedSuggestionIndex++;
+      }
+    }
+    updateSelectedSuggestion();
+    return;
+  }
+  
+  if (key === 'ArrowUp') {
+    e.preventDefault();
+    if (searchSuggestions.length === 0) return;
+    
+    if (selectedSuggestionIndex === -1) {
+      // Si no hay selección, vamos a la última
+      selectedSuggestionIndex = searchSuggestions.length - 1;
+    } else if (selectedSuggestionIndex === 0) {
+      // Si estamos en la primera, vamos a la última (bucle)
+      selectedSuggestionIndex = searchSuggestions.length - 1;
+    } else {
+      selectedSuggestionIndex--;
+    }
+    updateSelectedSuggestion();
+    return;
+  }
+  
+  if (key === 'Enter') {
+    e.preventDefault();
+    if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < searchSuggestions.length) {
+      const selected = searchSuggestions[selectedSuggestionIndex];
+      closeSearchOverlay();
+      window.location.href = `detalles.html?id=${selected.id}`;
+    } else {
+      executeSearch();
+    }
+    return;
+  }
+  
+  if (key === 'Escape') {
+    e.preventDefault();
+    closeSearchOverlay();
+    return;
+  }
+}
+
+// ===== ACTUALIZAR SUGERENCIA SELECCIONADA =====
+function updateSelectedSuggestion() {
+  const items = document.querySelectorAll('.suggestion-item');
+  items.forEach((item, index) => {
+    if (index === selectedSuggestionIndex) {
+      item.classList.add('selected');
+      item.setAttribute('aria-selected', 'true');
+      item.scrollIntoView({ block: 'nearest' });
+      // Enfocar el elemento para que el Tab continúe desde aquí
+      if (document.activeElement !== item) {
+        item.focus();
+      }
+    } else {
+      item.classList.remove('selected');
+      item.setAttribute('aria-selected', 'false');
+    }
+  });
+  
+  // Si no hay selección, devolver foco al input
+  if (selectedSuggestionIndex === -1) {
+    const input = document.getElementById('search-overlay-input');
+    if (input && document.activeElement !== input) {
+      input.focus();
+    }
+  }
+}
+
+// ===== GENERAR SUGERENCIAS =====
 function handleSearchSuggestions() {
   const query = document.getElementById('search-overlay-input')?.value.trim();
   const container = document.getElementById('search-suggestions');
   if (!container) return;
   container.innerHTML = '';
+  
+  selectedSuggestionIndex = -1;
+  searchSuggestions = [];
+  
   if (!query || query.length < 1) return;
 
   const rest = getRestaurantes();
@@ -333,50 +452,159 @@ function handleSearchSuggestions() {
     return false;
   }).slice(0, 6);
 
+  searchSuggestions = results;
+
   if (results.length === 0) {
     container.innerHTML = `<div style="padding:0.8rem 0.8rem;color:var(--brand-text);opacity:0.5;font-size:0.85rem;text-align:center;">No se encontraron resultados</div>`;
     return;
   }
 
-  results.forEach(r => {
+  results.forEach((r, index) => {
     const item = document.createElement('div');
     item.className = 'suggestion-item';
+    item.setAttribute('tabindex', '0');
+    item.setAttribute('role', 'option');
+    item.setAttribute('aria-selected', 'false');
+    item.dataset.index = index;
+    
     const tipoIcon = getTipoIcon(r.tipo);
     item.innerHTML = `
-      <div class="sug-icon"><i class="fa-solid ${tipoIcon.icon}"></i></div>
       <div class="sug-info">
         <div class="sug-name">${r.nombre}</div>
-        <div class="sug-desc">${r.tipo} · ${r.municipio}</div>
+        <div class="sug-desc">${r.tipo.charAt(0).toUpperCase() + r.tipo.slice(1)} · ${r.municipio}</div>
       </div>
-      <span class="sug-badge">${r.tipo}</span>
     `;
-    item.onclick = () => {
-      listadoQuery = r.nombre;
+    
+    item.onclick = function(e) {
+      e.stopPropagation();
       closeSearchOverlay();
-      window.location.href = `espacios.html?q=${encodeURIComponent(r.nombre)}`;
+      window.location.href = `detalles.html?id=${r.id}`;
     };
+    
+    item.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        closeSearchOverlay();
+        window.location.href = `detalles.html?id=${r.id}`;
+      }
+    });
+    
+    item.addEventListener('focus', function() {
+      selectedSuggestionIndex = parseInt(this.dataset.index);
+      updateSelectedSuggestion();
+    });
+    
     container.appendChild(item);
   });
 
   if (results.length > 0) {
     const seeAll = document.createElement('div');
-    seeAll.className = 'suggestion-item';
+    seeAll.className = 'suggestion-item see-all';
+    seeAll.setAttribute('tabindex', '0');
+    seeAll.setAttribute('role', 'button');
     seeAll.style.borderTop = '1px solid var(--brand-border)';
     seeAll.style.marginTop = '4px';
     seeAll.style.paddingTop = '10px';
+    seeAll.style.cursor = 'pointer';
     seeAll.innerHTML = `
       <div style="flex:1;font-weight:600;color:var(--brand-primary);font-size:0.85rem;text-align:center;">
         Ver todos los resultados para "<span style="font-weight:700;">${query}</span>"
       </div>
     `;
-    seeAll.onclick = () => {
+    seeAll.onclick = function(e) {
+      e.stopPropagation();
       listadoQuery = query;
       closeSearchOverlay();
       window.location.href = `espacios.html?q=${encodeURIComponent(query)}`;
     };
+    seeAll.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        this.click();
+      }
+    });
     container.appendChild(seeAll);
   }
 }
+
+// ===== GESTIONAR EL CICLO DE TAB DENTRO DEL OVERLAY =====
+function handleSearchOverlayTab(e) {
+  const overlay = document.getElementById('search-overlay');
+  if (!overlay || overlay.style.display !== 'flex') return;
+  
+  const focusableElements = overlay.querySelectorAll(
+    'input, button, .suggestion-item[tabindex="0"], .see-all[tabindex="0"]'
+  );
+  
+  if (focusableElements.length === 0) return;
+  
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+  
+  if (e.shiftKey && document.activeElement === firstElement) {
+    e.preventDefault();
+    lastElement.focus();
+    return;
+  }
+  
+  if (!e.shiftKey && document.activeElement === lastElement) {
+    e.preventDefault();
+    firstElement.focus();
+    return;
+  }
+}
+
+// ===== EVENTO GLOBAL PARA CAPTURAR TECLAS CUANDO EL OVERLAY ESTÁ ABIERTO =====
+document.addEventListener('keydown', function(e) {
+  // Si el overlay está abierto, capturar todas las teclas de navegación
+  if (isSearchOverlayOpen) {
+    // Prevenir scroll con flechas
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'PageUp' || e.key === 'PageDown' || e.key === 'Home' || e.key === 'End') {
+      e.preventDefault();
+      // Redirigir al handler de búsqueda para que maneje las flechas
+      handleSearchKeydown(e);
+      return;
+    }
+    
+    // Manejar Enter globalmente cuando el overlay está abierto
+    if (e.key === 'Enter') {
+      // Si el foco está en el input o en sugerencias, dejar que handleSearchKeydown lo maneje
+      const overlay = document.getElementById('search-overlay');
+      if (overlay && overlay.contains(document.activeElement)) {
+        handleSearchKeydown(e);
+        return;
+      }
+    }
+    
+    // Manejar Escape globalmente
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeSearchOverlay();
+      return;
+    }
+  }
+  
+  // Manejar Tab dentro del overlay
+  if (e.key === 'Tab') {
+    handleSearchOverlayTab(e);
+  }
+});
+
+// ===== FUNCIÓN PARA CERRAR OVERLAY CON CLICK FUERA =====
+document.addEventListener('click', function(e) {
+  const overlay = document.getElementById('search-overlay');
+  if (overlay && overlay.style.display === 'flex') {
+    const searchBtn = e.target.closest('[onclick*="openSearchOverlay"]') || 
+                      e.target.closest('.fa-magnifying-glass')?.parentElement;
+    if (searchBtn) return;
+    
+    if (!e.target.closest('.search-overlay-container')) {
+      closeSearchOverlay();
+    }
+  }
+});
 
 function handleHeroSearch(e) {
   e.preventDefault();
@@ -450,7 +678,6 @@ function toggleDarkMode() {
   localStorage.setItem('sh_dark_mode', isDark);
   let icon = document.getElementById('theme-icon');
   if(icon) icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-  // Actualizar logo
   updateHeaderLogo();
 }
 
@@ -460,6 +687,5 @@ function loadSavedTheme() {
     const icon = document.getElementById('theme-icon');
     if(icon) icon.className = 'fa-solid fa-sun';
   }
-  // Actualizar logo al cargar
   updateHeaderLogo();
 }

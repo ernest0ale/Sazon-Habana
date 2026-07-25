@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Detalle - Sazón Habana</title>
+  <title id="page-title">Detalle - Sazón Habana</title>
   <link rel="shortcut icon" href="resources/sazonHabana_lightLogo.png" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,9 +17,14 @@
   <link rel="stylesheet" href="frontend/css/mapa.css">
 
   <script src="frontend/scripts/tailwind.config.js"></script>
-  
 </head>
 <body class="min-h-screen flex flex-col antialiased">
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-notification" class="fixed top-24 right-6 z-50 transform translate-x-96 opacity-0 transition-all duration-300 flex items-center gap-3 bg-brand-card border border-brand-border px-5 py-4 rounded-2xl shadow-xl max-w-sm">
+    <div id="toast-icon-wrapper" class="w-10 h-10 rounded-full flex items-center justify-center text-white"></div>
+    <div><h4 id="toast-title" class="font-bold text-sm"></h4><p id="toast-desc" class="text-xs opacity-80"></p></div>
+  </div>
 
   <!-- SEARCH OVERLAY -->
   <div id="search-overlay" class="search-overlay" style="display:none;">
@@ -107,7 +112,7 @@
           <p class="text-sm text-white/70 max-w-sm mx-auto md:mx-0">Descubre y vive el sabor de Cuba. Restaurantes auténticos en La Habana.</p>
         </div>
         <div class="space-y-4 text-center md:text-left">
-          <h4 class="text-sm font-semibold uppercase tracking-wider text-brand-primary inline-block md:inline-block">Navegación</h4>
+          <h4 class="text-sm font-semibold uppercase tracking-wider text-white inline-block md:inline-block">Navegación</h4>
           <ul class="space-y-2 text-sm text-white/70">
             <li><a href="index.html" class="hover:text-white transition-colors">Inicio</a></li>
             <li><a href="espacios.html" class="hover:text-white transition-colors">Espacios</a></li>
@@ -115,7 +120,7 @@
           </ul>
         </div>
         <div class="space-y-4 text-center md:text-left">
-          <h4 class="text-sm font-semibold uppercase tracking-wider text-brand-primary inline-block md:inline-block">Información</h4>
+          <h4 class="text-sm font-semibold uppercase tracking-wider text-white inline-block md:inline-block">Información</h4>
           <ul class="space-y-2 text-sm text-white/70">
             <li><a href="privacidad.html" class="hover:text-white transition-colors">Política de privacidad</a></li>
             <li><a href="terminos.html" class="hover:text-white transition-colors">Términos de servicio</a></li>
@@ -147,10 +152,29 @@
       const id = urlParams.get('id');
       
       if (id) {
+        // Primero obtener el restaurante para actualizar el título
+        const restaurante = getRestauranteById(id);
+        if (restaurante) {
+          document.getElementById('page-title').textContent = restaurante.nombre + ' - Sazón Habana';
+        }
         renderRestauranteDetalle(id);
       } else {
         document.getElementById('restaurante-detalle-content').innerHTML = '<p class="text-center py-12">No se especificó un restaurante.</p>';
       }
+    };
+
+    function updateHeaderLogo() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const logo = document.getElementById('headerLogo');
+      if (logo) {
+        logo.src = isDark ? 'resources/sazonHabana_darkLogo.png' : 'resources/sazonHabana_lightLogo.png';
+      }
+    }
+
+    const originalToggleDarkMode = toggleDarkMode;
+    toggleDarkMode = function() {
+      originalToggleDarkMode();
+      updateHeaderLogo();
     };
   </script>
 </body>

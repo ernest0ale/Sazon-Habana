@@ -52,11 +52,6 @@ button, a, .card-transition {
   border-radius: 10px;
 }
 
-/* Logo del header */
-#headerLogo {
-  transition: opacity 0.3s ease;
-}
-
 /* Toast Notification */
 #toast-notification {
   position: fixed;
@@ -145,7 +140,6 @@ footer {
   transition: background-color 0.3s ease;
 }
 
-/* Los textos del footer siempre serán blancos (como estaban) */
 footer .text-white {
   color: #FFFFFF !important;
 }
@@ -349,4 +343,47 @@ footer button:hover {
     flex-direction: column;
     align-items: center;
   }
+}
+
+/* ===== SUGERENCIAS DE BÚSQUEDA - SELECCIÓN POR TECLADO ===== */
+.suggestion-item.selected {
+  background: var(--brand-primary) !important;
+  color: white !important;
+  border-radius: 8px;
+}
+
+.suggestion-item.selected .sug-name,
+.suggestion-item.selected .sug-desc {
+  color: white !important;
+}
+
+.suggestion-item.selected .sug-icon i {
+  color: white !important;
+}
+
+.suggestion-item.selected .sug-badge {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+/* Modo oscuro */
+.dark .suggestion-item.selected {
+  background: var(--brand-primary) !important;
+  color: white !important;
+}
+
+.dark .suggestion-item.selected .sug-name,
+.dark .suggestion-item.selected .sug-desc {
+  color: white !important;
+}
+
+.dark .suggestion-item.selected .sug-icon i {
+  color: white !important;
+}
+
+/* Focus visible para accesibilidad */
+.suggestion-item:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: -2px;
+  border-radius: 8px;
 }
