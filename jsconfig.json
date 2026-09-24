@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/contexts/*": ["./src/contexts/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/data/*": ["./src/data/*"],
+      "@/styles/*": ["./src/styles/*"]
+    },
+    "checkJs": false,
+    "jsx": "preserve",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "strict": false,
+    "noEmit": true
+  },
+  "include": ["src/**/*", "next.config.js"],
+  "exclude": ["node_modules", ".next", "out"]
+}
