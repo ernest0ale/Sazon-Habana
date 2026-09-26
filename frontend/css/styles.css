@@ -14,14 +14,14 @@
 }
 
 .dark {
-  --brand-bg: #1E2A22;
-  --brand-text: #E4EEE2;
-  --brand-primary: #8FC7A6;
-  --brand-hover: #A8D9BC;
-  --brand-border: #3A4F42;
-  --brand-card: #26332B;
-  --shadow-color: rgba(0, 0, 0, 0.45);
-  --footer-bg: rgb(30, 42, 34);
+  --brand-bg: #33473A;
+  --brand-text: #F0F7EF;
+  --brand-primary: #A6D9BC;
+  --brand-hover: #C0E8D2;
+  --brand-border: #567A62;
+  --brand-card: #3D5445;
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --footer-bg: rgb(51, 71, 58);
 }
 
 body {
