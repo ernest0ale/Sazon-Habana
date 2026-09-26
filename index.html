@@ -87,110 +87,116 @@
 
     <!-- HOME -->
     <section id="page-home" class="page-view">
-      <div class="relative bg-gradient-to-br from-[#E8F0E5] to-brand-bg dark:from-[#1A241C] dark:to-brand-bg overflow-hidden py-16 md:py-24">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <span class="inline-block text-brand-primary uppercase tracking-widest text-xs md:text-sm font-bold bg-brand-primary/10 px-3 py-1 rounded-full"></span>
-              <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-brand-text leading-tight">Descubre el Paladar de <br><span class="italic text-brand-primary underline decoration-brand-border">La Habana</span></h1>
-              <p class="text-lg md:text-xl text-brand-text/80 max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">De los restaurantes más elegantes del Vedado y Miramar, a las joyas escondidas en la Habana Vieja. Encuentra cartas completas y ubicaciones.</p>
-              <div class="pt-4 max-w-2xl mx-auto lg:mx-0">
-                <form onsubmit="handleHeroSearch(event)" class="bg-brand-card p-2 rounded-2xl md:rounded-full border border-brand-border shadow-lg flex flex-col md:flex-row gap-2 items-center">
-                  <div class="flex items-center gap-3 px-3 py-2 w-full">
-                    <!-- 🔥 Lupa con clase para modo oscuro -->
-                    <i class="fa-solid fa-magnifying-glass text-brand-primary text-xl search-icon"></i>
-                    <input type="text" id="hero-search-input" placeholder="¿Qué se te antoja hoy? (pizzas, criolla, mariscos, helados...)" class="bg-transparent text-brand-text placeholder-brand-text/50 outline-none w-full text-base">
-                  </div>
-                  <button type="submit" class="w-full md:w-auto bg-brand-primary hover:bg-brand-hover text-white px-8 py-3 rounded-xl md:rounded-full font-semibold">Buscar</button>
-                </form>
+
+      <!-- ZONA 1: Hero + categorías (fondo original) -->
+      <div class="zone-categorias">
+
+        <div class="relative bg-gradient-to-br from-[#E8F0E5] to-brand-bg dark:from-[#1A241C] dark:to-brand-bg overflow-hidden py-16 md:py-24">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                <span class="inline-block text-brand-primary uppercase tracking-widest text-xs md:text-sm font-bold bg-brand-primary/10 px-3 py-1 rounded-full"></span>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-brand-text leading-tight">Descubre el Paladar de <br><span class="italic text-brand-primary underline decoration-brand-border">La Habana</span></h1>
+                <p class="text-lg md:text-xl text-brand-text/80 max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">De los restaurantes más elegantes del Vedado y Miramar, a las joyas escondidas en la Habana Vieja. Encuentra cartas completas y ubicaciones.</p>
+                <div class="pt-4 max-w-2xl mx-auto lg:mx-0">
+                  <form onsubmit="handleHeroSearch(event)" class="bg-brand-card p-2 rounded-2xl md:rounded-full border border-brand-border shadow-lg flex flex-col md:flex-row gap-2 items-center">
+                    <div class="flex items-center gap-3 px-3 py-2 w-full">
+                      <i class="fa-solid fa-magnifying-glass text-brand-primary text-xl search-icon"></i>
+                      <input type="text" id="hero-search-input" placeholder="¿Qué se te antoja hoy? (pizzas, criolla, mariscos, helados...)" class="bg-transparent text-brand-text placeholder-brand-text/50 outline-none w-full text-base">
+                    </div>
+                    <button type="submit" class="w-full md:w-auto bg-brand-primary hover:bg-brand-hover text-white px-8 py-3 rounded-xl md:rounded-full font-semibold">Buscar</button>
+                  </form>
+                </div>
               </div>
-            </div>
-            <div class="lg:col-span-5 relative">
-              <div class="relative mx-auto max-w-[400px] lg:max-w-none">
-                <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=800" alt="Plato cubano" class="rounded-3xl shadow-xl border-4 border-brand-card object-cover w-full h-[350px] md:h-[450px] relative z-10" />
+              <div class="lg:col-span-5 relative">
+                <div class="relative mx-auto max-w-[400px] lg:max-w-none">
+                  <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=800" alt="Plato cubano" class="rounded-3xl shadow-xl border-4 border-brand-card object-cover w-full h-[350px] md:h-[450px] relative z-10" />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <section class="py-12 bg-brand-card/30 border-y border-brand-border/40">
-        <div class="max-w-7xl mx-auto px-4">
-          <!-- 🔥 "Busca según tus antojos" con clase para modo oscuro -->
-          <p class="text-center text-xs uppercase tracking-widest text-brand-primary font-bold mb-6 antojos-title">Busca según tus antojos</p>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-4">
-            <a href="espacios.html?tipo=criolla" class="home-category-btn">
-              <i class="fa-solid fa-utensils cat-icon"></i>
-              <span class="cat-label">Comida Criolla</span>
-            </a>
-            <a href="espacios.html?tipo=rápida" class="home-category-btn">
-              <i class="fa-solid fa-burger cat-icon"></i>
-              <span class="cat-label">Comida Rápida</span>
-            </a>
-            <a href="espacios.html?tipo=italiana" class="home-category-btn">
-              <i class="fa-solid fa-pizza-slice cat-icon"></i>
-              <span class="cat-label">Comida Italiana</span>
-            </a>
-            <a href="espacios.html?tipo=mariscos" class="home-category-btn">
-              <i class="fa-solid fa-fish cat-icon"></i>
-              <span class="cat-label">Mariscos & Pescado</span>
-            </a>
-            <a href="espacios.html?tipo=cafetería" class="home-category-btn">
-              <i class="fa-solid fa-mug-hot cat-icon"></i>
-              <span class="cat-label">Cafetería</span>
-            </a>
-            <a href="espacios.html?tipo=heladería" class="home-category-btn">
-              <i class="fa-solid fa-ice-cream cat-icon"></i>
-              <span class="cat-label">Heladería</span>
-            </a>
-            <a href="espacios.html?tipo=dulcería" class="home-category-btn">
-              <i class="fa-solid fa-cake-candles cat-icon"></i>
-              <span class="cat-label">Dulcería</span>
-            </a>
+        <section class="py-12 border-y border-brand-border/40">
+          <div class="max-w-7xl mx-auto px-4">
+            <p class="text-center text-xs uppercase tracking-widest text-brand-primary font-bold mb-6 antojos-title">Busca según tus antojos</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-4">
+              <a href="espacios.html?tipo=criolla" class="home-category-btn">
+                <i class="fa-solid fa-utensils cat-icon"></i>
+                <span class="cat-label">Comida Criolla</span>
+              </a>
+              <a href="espacios.html?tipo=rápida" class="home-category-btn">
+                <i class="fa-solid fa-burger cat-icon"></i>
+                <span class="cat-label">Comida Rápida</span>
+              </a>
+              <a href="espacios.html?tipo=italiana" class="home-category-btn">
+                <i class="fa-solid fa-pizza-slice cat-icon"></i>
+                <span class="cat-label">Comida Italiana</span>
+              </a>
+              <a href="espacios.html?tipo=mariscos" class="home-category-btn">
+                <i class="fa-solid fa-fish cat-icon"></i>
+                <span class="cat-label">Mariscos & Pescado</span>
+              </a>
+              <a href="espacios.html?tipo=cafetería" class="home-category-btn">
+                <i class="fa-solid fa-mug-hot cat-icon"></i>
+                <span class="cat-label">Cafetería</span>
+              </a>
+              <a href="espacios.html?tipo=heladería" class="home-category-btn">
+                <i class="fa-solid fa-ice-cream cat-icon"></i>
+                <span class="cat-label">Heladería</span>
+              </a>
+              <a href="espacios.html?tipo=dulcería" class="home-category-btn">
+                <i class="fa-solid fa-cake-candles cat-icon"></i>
+                <span class="cat-label">Dulcería</span>
+              </a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Carruseles con iconos -->
-      <section class="py-16 space-y-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  <div id="home-nuevos-container">
-    <div class="flex justify-between items-end mb-6">
-      <div>
-        <span class="text-brand-primary uppercase tracking-widest text-xs font-bold"></span>
-        <h2 class="text-3xl font-serif font-bold text-brand-text">
-          <i class="fa-regular fa-clock list-icon"></i> Más recientes
-        </h2>
       </div>
-    </div>
-    <div id="carrusel-nuevos" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
-  </div>
 
-  <div class="destacados-section space-y-16">
-    <div id="home-populares-container">
-      <div class="flex justify-between items-end mb-6">
-        <div>
-          <span class="text-brand-primary uppercase tracking-widest text-xs font-bold"></span>
-          <h2 class="text-3xl font-serif font-bold text-brand-text">
-            <i class="fa-solid fa-fire list-icon"></i> Más destacados
-          </h2>
-        </div>
-      </div>
-      <div id="carrusel-populares" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
-    </div>
+      <!-- ZONA 2: Carruseles (fondo nuevo) -->
+      <div class="zone-destacados">
+        <section class="py-16 space-y-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div id="home-nuevos-container">
+            <div class="flex justify-between items-end mb-6">
+              <div>
+                <span class="text-brand-primary uppercase tracking-widest text-xs font-bold"></span>
+                <h2 class="text-3xl font-serif font-bold text-brand-text">
+                  <i class="fa-regular fa-clock list-icon"></i> Más recientes
+                </h2>
+              </div>
+            </div>
+            <div id="carrusel-nuevos" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
+          </div>
 
-    <div id="home-mejores-container">
-      <div class="flex justify-between items-end mb-6">
-        <div>
-          <span class="text-brand-primary uppercase tracking-widest text-xs font-bold"></span>
-          <h2 class="text-3xl font-serif font-bold text-brand-text">
-            <i class="fa-solid fa-star list-icon"></i> Mejores reseñas
-          </h2>
-        </div>
+          <div id="home-populares-container">
+            <div class="flex justify-between items-end mb-6">
+              <div>
+                <span class="text-brand-primary uppercase tracking-widest text-xs font-bold"></span>
+                <h2 class="text-3xl font-serif font-bold text-brand-text">
+                  <i class="fa-solid fa-fire list-icon"></i> Más destacados
+                </h2>
+              </div>
+            </div>
+            <div id="carrusel-populares" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
+          </div>
+
+          <div id="home-mejores-container">
+            <div class="flex justify-between items-end mb-6">
+              <div>
+                <span class="text-brand-primary uppercase tracking-widest text-xs font-bold"></span>
+                <h2 class="text-3xl font-serif font-bold text-brand-text">
+                  <i class="fa-solid fa-star list-icon"></i> Mejores reseñas
+                </h2>
+              </div>
+            </div>
+            <div id="carrusel-mejor-valorados" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
+          </div>
+        </section>
       </div>
-      <div id="carrusel-mejor-valorados" class="flex gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"></div>
-    </div>
-  </div>
-</section>
+
+    </section>
 
   </main>
 
@@ -209,7 +215,6 @@
           <p class="text-sm text-white/70 max-w-sm mx-auto md:mx-0">Descubre y vive el sabor de Cuba. Restaurantes auténticos en La Habana.</p>
         </div>
         <div class="space-y-4 text-center md:text-left">
-          <!-- 🔥 Encabezado "Navegación" con línea debajo -->
           <h4 class="text-sm font-semibold uppercase tracking-wider text-white inline-block md:inline-block">Navegación</h4>
           <ul class="space-y-2 text-sm text-white/70">
             <li><a href="index.html" class="hover:text-white transition-colors">Inicio</a></li>
@@ -218,7 +223,6 @@
           </ul>
         </div>
         <div class="space-y-4 text-center md:text-left">
-          <!-- 🔥 Encabezado "Información" con línea debajo -->
           <h4 class="text-sm font-semibold uppercase tracking-wider text-white inline-block md:inline-block">Información</h4>
           <ul class="space-y-2 text-sm text-white/70">
             <li><a href="privacidad.html" class="hover:text-white transition-colors">Política de privacidad</a></li>
@@ -253,7 +257,6 @@
       updateMunicipioFilters();
     };
 
-    // ===== FUNCIÓN PARA ACTUALIZAR LOGO SEGÚN TEMA =====
     function updateHeaderLogo() {
       const isDark = document.documentElement.classList.contains('dark');
       const logo = document.getElementById('headerLogo');
@@ -262,7 +265,6 @@
       }
     }
 
-    // Sobrescribir toggleDarkMode para actualizar logo
     const originalToggleDarkMode = toggleDarkMode;
     toggleDarkMode = function() {
       originalToggleDarkMode();
