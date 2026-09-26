@@ -24,26 +24,16 @@
   --footer-bg: rgb(51, 71, 58);
 }
 
-.destacados-section {
-  background-color: #E8EDE4;
-  border-radius: 1.5rem;
-  padding: 2rem 1.5rem;
-}
-
-.dark .destacados-section {
-  background-color: #2A3B2F;
-}
-
 .zone-categorias {
   background-color: var(--brand-bg);
 }
 
 .zone-destacados {
-  background-color: #313F35;
+  background-color: #2D3A31;
 }
 
 .dark .zone-destacados {
-  background-color: #33473A;
+  background-color: #2F4235;
 }
 
 body {
