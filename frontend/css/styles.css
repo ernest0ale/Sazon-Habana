@@ -34,6 +34,18 @@
   background-color: #2A3B2F;
 }
 
+.zone-categorias {
+  background-color: var(--brand-bg);
+}
+
+.zone-destacados {
+  background-color: #313F35;
+}
+
+.dark .zone-destacados {
+  background-color: #33473A;
+}
+
 body {
   background-color: var(--brand-bg);
   color: var(--brand-text);
