@@ -14,14 +14,14 @@
 }
 
 .dark {
-  --brand-bg: #1A241C;
-  --brand-text: #E8F0E5;
-  --brand-primary: #7BA88E;
-  --brand-hover: #6A967C;
-  --brand-border: #3A4F3E;
-  --brand-card: #243029;
-  --shadow-color: rgba(0, 0, 0, 0.35);
-  --footer-bg: rgb(36, 46, 38);
+  --brand-bg: #33473A;
+  --brand-text: #F0F7EF;
+  --brand-primary: #A6D9BC;
+  --brand-hover: #C0E8D2;
+  --brand-border: #567A62;
+  --brand-card: #3D5445;
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --footer-bg: rgb(51, 71, 58);
 }
 
 .zone-categorias {
@@ -29,11 +29,11 @@
 }
 
 .zone-destacados {
-  background-color: var(--brand-bg);
+  background-color: #313F35;
 }
 
 .dark .zone-destacados {
-  background-color: var(--brand-bg);
+  background-color: #273827;
 }
 
 body {
