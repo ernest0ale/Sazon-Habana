@@ -24,6 +24,16 @@
   --footer-bg: rgb(51, 71, 58);
 }
 
+.destacados-section {
+  background-color: #E8EDE4;
+  border-radius: 1.5rem;
+  padding: 2rem 1.5rem;
+}
+
+.dark .destacados-section {
+  background-color: #2A3B2F;
+}
+
 body {
   background-color: var(--brand-bg);
   color: var(--brand-text);
